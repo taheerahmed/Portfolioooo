@@ -1,0 +1,189 @@
+/* eslint-disable -- The following are valid Tailwind directives, ignore CSS linting warnings */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {  
+  
+  :root {
+    --primary-glow: 0 0 20px 5px rgba(255, 255, 255, 0.3);
+    --secondary-glow: 0 0 10px 3px rgba(255, 255, 255, 0.15);
+    --terminal-text-color: rgba(255, 255, 255, 0.9);
+    --terminal-shadow: 0 20px 68px rgba(0, 0, 0, 0.55);
+    --terminal-glow: 0 0 20px rgba(255, 255, 255, 0.1);
+    --glitch-offset: 2px;
+  }
+  
+  body {
+    @apply bg-light-background text-light-accent dark:bg-dark-background dark:text-white;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Improve anchor tag underlines */
+  a {
+    @apply relative;
+  }
+  
+  a.hover-glow {
+    transition: color 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
+  }
+  
+  a.hover-glow:hover {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+  }
+
+  /* Improve focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-light-primary/60 dark:ring-dark-primary/60 ring-offset-2 ring-offset-white dark:ring-offset-dark-background;
+  }
+  
+  /* Code and terminal like elements */
+  pre, code, .code-block {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+    line-height: 1.5;
+  }
+
+  /* Improve scrollbar appearance */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-light-primary/20 dark:hover:bg-dark-primary/20;
+  }
+}
+
+@layer components {
+  /* Animated line effect - light/dark aware */
+  .line-animation {
+    @apply relative overflow-hidden;
+    &::before {
+      content: '';
+      @apply absolute inset-0 bg-light-gradient-line dark:bg-gradient-line bg-[length:200%_100%] animate-line-flow;
+    }
+  }
+  
+  /* Grid background - light/dark aware */
+  .grid-bg {
+    @apply relative;
+    &::before {
+      content: '';
+      @apply absolute inset-0 bg-light-grid-pattern dark:bg-grid-pattern bg-[size:40px_40px] opacity-5;
+    }
+  }
+  
+  /* Border flow animation - light/dark aware */
+  .border-flow {
+    @apply relative;
+    &::after {
+      content: '';
+      @apply absolute inset-0 border rounded-lg transition-colors;
+      @apply border-gray-200/40 dark:border-white/10 dark:animate-border-pulse;
+    }
+  }
+  
+  /* Line hover effect - light/dark aware */
+  .line-hover {
+    @apply relative overflow-hidden;
+    &::after {
+      content: '';
+      @apply absolute bottom-0 left-0 w-full h-[1px] transform scale-x-0 transition-transform duration-300 origin-left;
+      @apply bg-light-primary/20 dark:bg-white/20;
+    }
+    &:hover::after {
+      @apply scale-x-100;
+    }
+  }
+  
+  /* Card styles - light/dark aware */
+  .card-light {
+    @apply bg-white shadow-light-card border border-gray-100 dark:bg-dark-surface dark:shadow-sharp dark:border-dark-border/50;
+  }
+  
+  /* Button styles - light/dark aware */
+  .btn-primary {
+    @apply bg-light-primary text-white shadow-light-button hover:shadow-light-glow dark:bg-dark-primary dark:text-white dark:shadow-none dark:hover:bg-dark-primary/90;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-light-primary border border-light-primary/20 hover:border-light-primary/50 shadow-light-subtle
+    dark:bg-dark-surface dark:text-dark-primary dark:border-dark-primary/20 dark:hover:border-dark-primary/50;
+  }
+  
+  /* Pill effects for either theme */
+  .pill-light {
+    @apply rounded-full bg-gray-100/70 backdrop-blur-sm dark:bg-gray-800/30;
+  }
+  
+  /* Dark mode pulse background */
+  .pulse-bg-dark {
+    @apply bg-dark-background;
+    background-image: 
+      linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%),
+      linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+    animation: pulse-pattern-dark 4s linear infinite;
+  }
+
+  /* Light mode pulse background */
+  .pulse-bg-light {
+    @apply bg-light-background;
+    background-image: 
+      linear-gradient(45deg, rgba(59,130,246,0.02) 25%, transparent 25%, transparent 75%, rgba(59,130,246,0.02) 75%),
+      linear-gradient(45deg, rgba(59,130,246,0.02) 25%, transparent 25%, transparent 75%, rgba(59,130,246,0.02) 75%);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+    animation: pulse-pattern-light 4s linear infinite;
+  }
+
+  /* Auto mode that selects based on theme */
+  .pulse-bg {
+    @apply pulse-bg-light dark:pulse-bg-dark;
+  }
+}
+
+
+
+@keyframes pulse-pattern-dark {
+  0% {
+    background-color: rgba(255,255,255,0);
+  }
+  50% {
+    background-color: rgba(255,255,255,0.02);
+  }
+  100% {
+    background-color: rgba(255,255,255,0);
+  }
+}
+
+@keyframes pulse-pattern-light {
+  0% {
+    background-color: rgba(59,130,246,0.01);
+  }
+  50% {
+    background-color: rgba(59,130,246,0.04);
+  }
+  100% {
+    background-color: rgba(59,130,246,0.01);
+  }
+}
+
+/* Subtle glow animations for light mode */
+@keyframes soft-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px 8px rgba(59, 130, 246, 0.2);
+  }
+}
+
+.animate-soft-glow {
+  animation: soft-glow 4s ease-in-out infinite;
+}
