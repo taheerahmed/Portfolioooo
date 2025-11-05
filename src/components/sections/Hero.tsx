@@ -7,137 +7,85 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const skills = ['Full Stack Developer', 'React Specialist', 'Cloud Architect', 'UI/UX Enthusiast'];
+const roles = ['Developer', 'Designer', 'Creator', 'Innovator'];
 
 export const Hero: React.FC = () => {
   const { theme } = useTheme();
   const heroRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const [currentSkill, setCurrentSkill] = useState(0);
-  const [text, setText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [delta, setDelta] = useState(150);
+  const scrollTextRef = useRef<HTMLDivElement>(null);
+  const [currentRole, setCurrentRole] = useState(0);
 
-  // Typing effect
   useEffect(() => {
-    const skill = skills[currentSkill];
-    const type = () => {
-      if (isDeleting) {
-        setText(skill.substring(0, text.length - 1));
-      } else {
-        setText(skill.substring(0, text.length + 1));
-      }
+    const interval = setInterval(() => {
+      setCurrentRole((prev) => (prev + 1) % roles.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
-      if (!isDeleting && text === skill) {
-        setDelta(2000);
-        setIsDeleting(true);
-      } else if (isDeleting && text === '') {
-        setIsDeleting(false);
-        setCurrentSkill((prev) => (prev + 1) % skills.length);
-        setDelta(150);
-      } else {
-        setDelta(isDeleting ? 50 : 150);
-      }
-    };
-
-    const ticker = setTimeout(type, delta);
-    return () => clearTimeout(ticker);
-  }, [text, delta, currentSkill, isDeleting]);
-
-  // GSAP Animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Heading animation - fade up
-      if (headingRef.current) {
-        gsap.fromTo(
-          headingRef.current,
-          {
-            opacity: 0,
-            y: 60,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1.2,
-            ease: 'power3.out',
-            delay: 0.2,
-          }
-        );
-      }
+      // Animate name letters
+      const letters = document.querySelectorAll('.name-letter');
+      gsap.fromTo(
+        letters,
+        {
+          opacity: 0,
+          y: 100,
+          rotationX: -90,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          rotationX: 0,
+          duration: 1,
+          stagger: 0.03,
+          ease: 'power4.out',
+          delay: 0.3,
+        }
+      );
 
-      // Subtitle animation - fade up with delay
-      if (subtitleRef.current) {
-        gsap.fromTo(
-          subtitleRef.current,
-          { opacity: 0, y: 40 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            delay: 0.6,
-            ease: 'power3.out',
-          }
-        );
-      }
+      // Horizontal scrolling text effect
+      if (scrollTextRef.current) {
+        const scrollWidth = scrollTextRef.current.scrollWidth;
 
-      // CTA animation
-      if (ctaRef.current) {
-        gsap.fromTo(
-          ctaRef.current,
-          { opacity: 0, y: 30 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            delay: 1,
-            ease: 'power3.out',
-          }
-        );
-      }
-
-      // Parallax effect on scroll
-      if (heroRef.current) {
-        gsap.to(heroRef.current, {
-          y: 200,
-          opacity: 0.5,
+        gsap.to(scrollTextRef.current, {
+          x: -scrollWidth / 2,
+          ease: 'none',
           scrollTrigger: {
             trigger: heroRef.current,
             start: 'top top',
             end: 'bottom top',
-            scrub: 1.5,
+            scrub: 1,
           },
         });
       }
+
+      // Parallax sections
+      gsap.to('.hero-content', {
+        y: 100,
+        opacity: 0.3,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        },
+      });
+
+      // Floating elements
+      gsap.to('.float-element', {
+        y: -30,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
+        duration: 2,
+        stagger: 0.2,
+      });
     }, heroRef);
 
     return () => ctx.revert();
   }, []);
-
-  // Magnetic button effect
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const button = e.currentTarget;
-    const rect = button.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-
-    gsap.to(button, {
-      x: x * 0.2,
-      y: y * 0.2,
-      duration: 0.3,
-      ease: 'power2.out',
-    });
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    gsap.to(e.currentTarget, {
-      x: 0,
-      y: 0,
-      duration: 0.5,
-      ease: 'elastic.out(1, 0.3)',
-    });
-  };
 
   const scrollToProjects = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -151,61 +99,71 @@ export const Hero: React.FC = () => {
     <section
       ref={heroRef}
       id="home"
-      className="relative min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-hidden py-20"
+      className="relative min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-hidden"
     >
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-50/50 to-transparent dark:from-transparent dark:via-gray-900/30 dark:to-transparent pointer-events-none" />
+      {/* Floating minimal shapes */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="float-element absolute top-20 left-20 w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
+        <div className="float-element absolute top-40 right-32 w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700" />
+        <div className="float-element absolute bottom-40 left-40 w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
+        <div className="float-element absolute bottom-20 right-20 w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700" />
+      </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 md:px-6 z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Main heading */}
+      <div className="container mx-auto px-4 md:px-6 z-10 hero-content">
+        <div className="max-w-6xl mx-auto text-center">
+          {/* Large name with split text animation */}
           <h1
-            ref={headingRef}
-            className="text-6xl md:text-8xl lg:text-9xl font-bold text-black dark:text-white mb-8 tracking-tight"
+            className="text-8xl md:text-[12rem] lg:text-[16rem] font-bold text-black dark:text-white mb-4 leading-none tracking-tighter"
+            style={{ perspective: '1000px' }}
           >
-            Taheer Ahmed
+            {'TAHEER'.split('').map((letter, i) => (
+              <span
+                key={i}
+                className="name-letter inline-block"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                {letter}
+              </span>
+            ))}
           </h1>
 
-          {/* Subtitle with typing effect */}
-          <p
-            ref={subtitleRef}
-            className="text-xl md:text-3xl text-gray-600 dark:text-gray-400 mb-12 h-10 flex items-center justify-center"
-          >
-            <span>{text}</span>
-            <motion.span
-              className="inline-block w-1 h-7 bg-black dark:bg-white ml-2"
-              animate={{ opacity: [0, 1, 0] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            />
-          </p>
+          {/* Animated role text */}
+          <div className="h-16 flex items-center justify-center mb-12">
+            <motion.div
+              key={currentRole}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="text-3xl md:text-5xl text-gray-600 dark:text-gray-400 font-light"
+            >
+              {roles[currentRole]}
+            </motion.div>
+          </div>
 
           {/* CTA Buttons */}
-          <div ref={ctaRef} className="flex flex-wrap gap-6 justify-center mb-20">
+          <div className="flex flex-wrap gap-6 justify-center mb-32">
             <button
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
               onClick={() => {
                 const projectsSection = document.getElementById('projects');
                 if (projectsSection) {
                   projectsSection.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black text-lg font-medium rounded-full hover:shadow-xl transition-shadow duration-300"
+              className="group relative px-12 py-5 bg-black dark:bg-white text-white dark:text-black text-lg font-medium rounded-full overflow-hidden"
             >
-              View Work
+              <span className="relative z-10">View Work</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-black dark:from-gray-200 dark:to-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </button>
 
             <button
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
               onClick={() => {
                 const contactSection = document.getElementById('contact');
                 if (contactSection) {
                   contactSection.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="px-8 py-4 border-2 border-black dark:border-white text-black dark:text-white text-lg font-medium rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300"
+              className="px-12 py-5 border-2 border-black dark:border-white text-black dark:text-white text-lg font-medium rounded-full hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all duration-300"
             >
               Get in Touch
             </button>
@@ -225,10 +183,28 @@ export const Hero: React.FC = () => {
             }}
           >
             <div className="flex flex-col items-center gap-2">
-              <span className="text-sm uppercase tracking-widest">Scroll</span>
+              <span className="text-xs uppercase tracking-widest">Scroll</span>
               <ArrowDown className="w-5 h-5" />
             </div>
           </motion.a>
+        </div>
+      </div>
+
+      {/* Scrolling text at bottom */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden py-8 border-t border-gray-200 dark:border-gray-800">
+        <div ref={scrollTextRef} className="flex whitespace-nowrap">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center">
+              <span className="text-6xl font-bold text-gray-100 dark:text-gray-900 mx-8">
+                FULL STACK DEVELOPER
+              </span>
+              <span className="text-6xl text-gray-300 dark:text-gray-700 mx-8">•</span>
+              <span className="text-6xl font-bold text-gray-100 dark:text-gray-900 mx-8">
+                UI/UX DESIGNER
+              </span>
+              <span className="text-6xl text-gray-300 dark:text-gray-700 mx-8">•</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>
