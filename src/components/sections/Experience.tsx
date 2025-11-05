@@ -18,54 +18,98 @@ export const Experience: React.FC = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate timeline line
+      // Heading animation with split reveal
+      gsap.fromTo(
+        '.experience-heading',
+        {
+          opacity: 0,
+          y: 60,
+          rotationX: -90,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          rotationX: 0,
+          duration: 1.2,
+          ease: 'power4.out',
+          scrollTrigger: {
+            trigger: '.experience-heading',
+            start: 'top 80%',
+          },
+        }
+      );
+
+      // Animate timeline line with liquid effect
       if (timelineRef.current) {
         gsap.fromTo(
           timelineRef.current,
-          { scaleY: 0 },
+          {
+            scaleY: 0,
+            transformOrigin: 'top center',
+          },
           {
             scaleY: 1,
-            duration: 1.5,
-            ease: 'power3.out',
+            duration: 2,
+            ease: 'power2.inOut',
             scrollTrigger: {
               trigger: timelineRef.current,
               start: 'top 80%',
-              toggleActions: 'play none none none',
+              end: 'bottom 20%',
+              scrub: 1,
             },
           }
         );
+
+        // Add glow effect that follows scroll
+        gsap.to(timelineRef.current, {
+          boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+          scrollTrigger: {
+            trigger: timelineRef.current,
+            start: 'top 80%',
+            end: 'bottom 20%',
+            scrub: 1,
+          },
+        });
       }
 
-      // Animate experience cards
+      // Animate experience cards with advanced effects
       const cards = gsap.utils.toArray('.experience-card');
 
       cards.forEach((card: any, index) => {
         const isLeft = index % 2 === 0;
 
-        // Card slide in
-        gsap.fromTo(
+        // Create timeline for complex animation
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+
+        // Card entrance with 3D rotation and slide
+        tl.fromTo(
           card,
           {
-            x: isLeft ? -100 : 100,
+            x: isLeft ? -150 : 150,
             opacity: 0,
+            rotationY: isLeft ? -45 : 45,
+            scale: 0.9,
           },
           {
             x: 0,
             opacity: 1,
-            duration: 0.8,
+            rotationY: 0,
+            scale: 1,
+            duration: 1,
             ease: 'power3.out',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
           }
         );
 
-        // Animate timeline dot
+        // Animate timeline dot with pulse
         const dot = card.querySelector('.timeline-dot');
         if (dot) {
-          gsap.fromTo(
+          tl.fromTo(
             dot,
             {
               scale: 0,
@@ -74,36 +118,101 @@ export const Experience: React.FC = () => {
             {
               scale: 1,
               opacity: 1,
-              duration: 0.5,
-              ease: 'back.out(1.7)',
-              scrollTrigger: {
-                trigger: card,
-                start: 'top 85%',
-                toggleActions: 'play none none none',
-              },
-            }
+              duration: 0.6,
+              ease: 'elastic.out(1.2, 0.5)',
+            },
+            '-=0.5'
           );
+
+          // Add continuous pulse animation
+          gsap.to(dot, {
+            scale: 1.3,
+            opacity: 0.7,
+            duration: 2,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+          });
         }
 
-        // Animate logo
+        // Animate logo with 3D flip and scale
         const logo = card.querySelector('.company-logo');
         if (logo) {
-          gsap.fromTo(
+          tl.fromTo(
             logo,
             {
               rotationY: 180,
+              rotationX: 90,
               opacity: 0,
+              scale: 0.5,
             },
             {
               rotationY: 0,
+              rotationX: 0,
               opacity: 1,
+              scale: 1,
+              duration: 1,
+              ease: 'back.out(1.4)',
+            },
+            '-=0.7'
+          );
+
+          // Add hover effect
+          logo.addEventListener('mouseenter', () => {
+            gsap.to(logo, {
+              rotationY: 360,
+              scale: 1.1,
               duration: 0.8,
-              delay: 0.2,
-              ease: 'power3.out',
+              ease: 'power2.out',
+            });
+          });
+        }
+
+        // Stagger content elements
+        const contentElements = card.querySelectorAll('.content-element');
+        tl.fromTo(
+          contentElements,
+          {
+            opacity: 0,
+            y: 20,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power2.out',
+          },
+          '-=0.5'
+        );
+
+        // Parallax effect on scroll
+        gsap.to(card, {
+          y: isLeft ? 50 : -50,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
+          },
+        });
+
+        // Card content reveal on scroll
+        const cardContent = card.querySelector('.card-content');
+        if (cardContent) {
+          gsap.fromTo(
+            cardContent,
+            {
+              clipPath: 'inset(0% 0% 100% 0%)',
+            },
+            {
+              clipPath: 'inset(0% 0% 0% 0%)',
+              duration: 1.2,
+              ease: 'power3.inOut',
               scrollTrigger: {
                 trigger: card,
-                start: 'top 85%',
-                toggleActions: 'play none none none',
+                start: 'top 80%',
               },
             }
           );
@@ -118,11 +227,11 @@ export const Experience: React.FC = () => {
     <section ref={sectionRef} id="experience" className="py-32 bg-gray-50 dark:bg-gray-950">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section header */}
-        <div className="max-w-3xl mb-20">
-          <h2 className="text-5xl md:text-7xl font-bold text-black dark:text-white mb-6">
+        <div className="max-w-3xl mb-20" style={{ perspective: '1000px' }}>
+          <h2 className="experience-heading text-5xl md:text-7xl font-bold text-black dark:text-white mb-6">
             Experience
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
+          <p className="experience-heading text-xl text-gray-600 dark:text-gray-400">
             My professional journey in tech.
           </p>
         </div>
@@ -152,8 +261,11 @@ export const Experience: React.FC = () => {
 
                   {/* Content card */}
                   <div className={isLeft ? 'md:pr-12' : 'md:pl-12 md:col-start-2'}>
-                    <div className="bg-white dark:bg-black p-8 rounded-2xl shadow-lg">
-                      <div className="flex items-start gap-6 mb-6">
+                    <div
+                      className="card-content bg-white dark:bg-black p-8 rounded-2xl shadow-lg"
+                      style={{ transformStyle: 'preserve-3d' }}
+                    >
+                      <div className="flex items-start gap-6 mb-6 content-element">
                         <div
                           className="company-logo w-16 h-16 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-900 flex-shrink-0"
                           style={{ transformStyle: 'preserve-3d' }}
@@ -179,7 +291,7 @@ export const Experience: React.FC = () => {
                         </div>
                       </div>
 
-                      <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                      <p className="content-element text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
                         {experience.description}
                       </p>
 
@@ -225,7 +337,7 @@ export const Experience: React.FC = () => {
 
                       <button
                         onClick={() => toggleExpand(experience.id)}
-                        className="mt-6 flex items-center gap-2 text-black dark:text-white hover:gap-3 transition-all"
+                        className="content-element mt-6 flex items-center gap-2 text-black dark:text-white hover:gap-3 transition-all"
                       >
                         <span>{expandedId === experience.id ? 'Show less' : 'Show more'}</span>
                         <ChevronDown

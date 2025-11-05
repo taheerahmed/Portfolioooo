@@ -6,6 +6,7 @@ import { Hero } from './components/sections/Hero';
 import { About } from './components/sections/About';
 import { Projects } from './components/sections/Projects';
 import { Experience } from './components/sections/Experience';
+import { Companies } from './components/sections/Companies';
 import { Testimonials } from './components/sections/Testimonials';
 import { Contact } from './components/sections/Contact';
 import { initSmoothScroll } from './utils/smoothScroll';
@@ -44,6 +45,7 @@ function App() {
           <Projects />
           <About />
           <Experience />
+          <Companies />
           <Testimonials />
           <Contact />
         </main>
