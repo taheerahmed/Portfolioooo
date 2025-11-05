@@ -1,63 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { testimonials } from '../../data/testimonials';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Draggable } from 'gsap/Draggable';
 
-gsap.registerPlugin(ScrollTrigger, Draggable);
+gsap.registerPlugin(ScrollTrigger);
 
 export const Testimonials: React.FC = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const handleNext = () => {
+    setDirection(1);
+    setActiveIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const handlePrev = () => {
+    setDirection(-1);
+    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // 3D rotating cards on scroll
-      if (cardsRef.current) {
-        const cards = cardsRef.current.querySelectorAll('.testimonial-card');
-
-        cards.forEach((card, index) => {
-          // Initial positioning
-          gsap.set(card, {
-            zIndex: testimonials.length - index,
-          });
-
-          // Parallax effect on scroll
-          gsap.to(card, {
-            y: index * 20,
-            rotationY: index * 5,
-            scale: 1 - index * 0.05,
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: 'top 80%',
-              end: 'bottom 20%',
-              scrub: 1,
-            },
-          });
-
-          // Hover effect
-          (card as HTMLElement).addEventListener('mouseenter', () => {
-            gsap.to(card, {
-              scale: 1.05,
-              y: -10,
-              duration: 0.3,
-              ease: 'power2.out',
-            });
-          });
-
-          (card as HTMLElement).addEventListener('mouseleave', () => {
-            gsap.to(card, {
-              scale: 1 - index * 0.05,
-              y: index * 20,
-              duration: 0.3,
-              ease: 'power2.out',
-            });
-          });
-        });
-      }
-
       // Fade in section
       gsap.fromTo(
         sectionRef.current,
@@ -70,47 +37,69 @@ export const Testimonials: React.FC = () => {
           scrollTrigger: {
             trigger: sectionRef.current,
             start: 'top 80%',
+            toggleActions: 'play none none none',
           },
         }
       );
+
+      // Animate preview cards
+      const previews = gsap.utils.toArray('.preview-card');
+      previews.forEach((card: any, index) => {
+        gsap.fromTo(
+          card,
+          {
+            opacity: 0,
+            y: 50,
+            scale: 0.8,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            delay: 0.1 * index,
+            ease: 'back.out(1.7)',
+            scrollTrigger: {
+              trigger: carouselRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
-  const handleCardClick = (index: number) => {
-    if (cardsRef.current) {
-      const cards = cardsRef.current.querySelectorAll('.testimonial-card');
-
-      // Animate clicked card to front
-      cards.forEach((card, cardIndex) => {
-        if (cardIndex === index) {
-          gsap.to(card, {
-            zIndex: testimonials.length,
-            scale: 1,
-            y: 0,
-            rotationY: 0,
-            duration: 0.5,
-            ease: 'power2.out',
-          });
-        } else {
-          const newIndex = cardIndex > index ? cardIndex - 1 : cardIndex + 1;
-          gsap.to(card, {
-            zIndex: testimonials.length - newIndex,
-            scale: 1 - newIndex * 0.05,
-            y: newIndex * 20,
-            rotationY: newIndex * 5,
-            duration: 0.5,
-            ease: 'power2.out',
-          });
-        }
-      });
-    }
-    setActiveIndex(index);
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0,
+      scale: 0.8,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.32, 0.72, 0, 1],
+      },
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0,
+      scale: 0.8,
+      transition: {
+        duration: 0.5,
+        ease: [0.32, 0.72, 0, 1],
+      },
+    }),
   };
 
   return (
-    <section ref={sectionRef} id="testimonials" className="py-32 bg-gray-50 dark:bg-gray-950">
+    <section ref={sectionRef} id="testimonials" className="py-32 bg-white dark:bg-black">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section header */}
         <div className="max-w-3xl mb-20">
@@ -122,83 +111,132 @@ export const Testimonials: React.FC = () => {
           </p>
         </div>
 
-        {/* 3D stacked cards */}
-        <div className="max-w-5xl mx-auto">
-          <div
-            ref={cardsRef}
-            className="relative h-[600px] md:h-[500px]"
-            style={{ perspective: '2000px' }}
-          >
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={testimonial.id}
-                className="testimonial-card absolute inset-0 cursor-pointer"
-                style={{ transformStyle: 'preserve-3d' }}
-                onClick={() => handleCardClick(index)}
+        {/* Main carousel */}
+        <div ref={carouselRef} className="max-w-6xl mx-auto">
+          <div className="relative h-[500px] mb-16 overflow-hidden">
+            <AnimatePresence custom={direction} mode="wait">
+              <motion.div
+                key={activeIndex}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="absolute inset-0"
               >
-                <div className="bg-white dark:bg-black rounded-3xl p-8 md:p-12 h-full shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col justify-between">
+                <div className="bg-gray-50 dark:bg-gray-950 rounded-3xl p-8 md:p-16 h-full flex flex-col justify-center">
                   {/* Quote */}
-                  <div>
-                    <div className="text-6xl text-gray-200 dark:text-gray-800 mb-6">"</div>
-                    <blockquote className="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-                      {testimonial.text}
+                  <div className="mb-12">
+                    <div className="text-8xl text-gray-200 dark:text-gray-800 leading-none mb-8">"</div>
+                    <blockquote className="text-3xl md:text-4xl text-gray-800 dark:text-gray-200 leading-relaxed font-light">
+                      {testimonials[activeIndex].text}
                     </blockquote>
                   </div>
 
                   {/* Author */}
                   <div className="flex items-center gap-6">
                     <div className="relative">
-                      <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-gray-100 dark:border-gray-900">
+                      <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-black">
                         <img
-                          src={testimonial.image}
-                          alt={testimonial.name}
+                          src={testimonials[activeIndex].image}
+                          alt={testimonials[activeIndex].name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      {/* Floating indicator for active card */}
-                      {index === activeIndex && (
-                        <motion.div
-                          className="absolute -top-1 -right-1 w-4 h-4 bg-black dark:bg-white rounded-full"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: 'spring', stiffness: 500 }}
-                        />
-                      )}
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-black dark:text-white mb-1">
-                        {testimonial.name}
+                      <div className="text-2xl font-bold text-black dark:text-white mb-1">
+                        {testimonials[activeIndex].name}
                       </div>
-                      <div className="text-gray-600 dark:text-gray-400">
-                        {testimonial.role}
+                      <div className="text-gray-600 dark:text-gray-400 text-lg">
+                        {testimonials[activeIndex].role}
                       </div>
-                      <div className="text-gray-500 dark:text-gray-500 text-sm">
-                        {testimonial.company}
+                      <div className="text-gray-500 dark:text-gray-500">
+                        {testimonials[activeIndex].company}
                       </div>
                     </div>
                   </div>
-
-                  {/* Card number */}
-                  <div className="absolute top-8 right-8 text-8xl font-bold text-gray-100 dark:text-gray-900">
-                    {String(index + 1).padStart(2, '0')}
-                  </div>
                 </div>
-              </div>
-            ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Navigation dots */}
-          <div className="flex justify-center gap-2 mt-12">
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            {/* Preview cards */}
+            <div className="hidden md:flex gap-4 flex-1">
+              {testimonials.slice(0, 3).map((testimonial, index) => {
+                const actualIndex = (activeIndex + index) % testimonials.length;
+                const isActive = index === 0;
+
+                return (
+                  <button
+                    key={testimonial.id}
+                    onClick={() => {
+                      setDirection(actualIndex > activeIndex ? 1 : -1);
+                      setActiveIndex(actualIndex);
+                    }}
+                    className={`preview-card flex-1 p-4 rounded-xl transition-all duration-300 text-left ${
+                      isActive
+                        ? 'bg-black dark:bg-white text-white dark:text-black'
+                        : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                        <img
+                          src={testimonials[actualIndex].image}
+                          alt={testimonials[actualIndex].name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="text-sm font-bold truncate">
+                        {testimonials[actualIndex].name}
+                      </div>
+                    </div>
+                    <div className="text-xs line-clamp-2">
+                      {testimonials[actualIndex].text}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Arrow buttons */}
+            <div className="flex gap-4 md:ml-8">
+              <button
+                onClick={handlePrev}
+                className="w-14 h-14 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:scale-110 transition-transform"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+
+              <button
+                onClick={handleNext}
+                className="w-14 h-14 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:scale-110 transition-transform"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Dots indicator (mobile) */}
+          <div className="flex justify-center gap-2 mt-8 md:hidden">
             {testimonials.map((_, index) => (
               <button
                 key={index}
-                onClick={() => handleCardClick(index)}
-                className={`transition-all duration-300 rounded-full ${
+                onClick={() => {
+                  setDirection(index > activeIndex ? 1 : -1);
+                  setActiveIndex(index);
+                }}
+                className={`transition-all duration-300 ${
                   index === activeIndex
-                    ? 'w-12 h-3 bg-black dark:bg-white'
-                    : 'w-3 h-3 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600'
+                    ? 'w-8 h-2 bg-black dark:bg-white'
+                    : 'w-2 h-2 bg-gray-300 dark:bg-gray-700'
                 }`}
-                aria-label={`View testimonial ${index + 1}`}
+                aria-label={`Go to testimonial ${index + 1}`}
               />
             ))}
           </div>
