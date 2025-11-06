@@ -15,6 +15,9 @@ export const Hero: React.FC = () => {
   const [currentRole, setCurrentRole] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<(HTMLDivElement | null)[]>([]);
+  const wavesRef = useRef<SVGSVGElement>(null);
+  const meshRef = useRef<HTMLDivElement>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,31 +26,49 @@ export const Hero: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Mouse tracking for interactive effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 2 - 1,
+        y: (e.clientY / window.innerHeight) * 2 - 1,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate letters with simple entrance
+      // Animate letters with enhanced entrance
       const letters = gsap.utils.toArray('.hero-letter');
 
       letters.forEach((letter: any, index) => {
-        // Simple entrance animation
+        // Enhanced entrance animation
         gsap.fromTo(
           letter,
           {
             opacity: 0,
-            y: 50,
+            y: 100,
+            rotationX: -90,
+            z: -200,
           },
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
-            delay: index * 0.05,
-            ease: 'power3.out',
+            rotationX: 0,
+            z: 0,
+            duration: 1.2,
+            delay: index * 0.08,
+            ease: 'expo.out',
           }
         );
 
-        // Rotation on scroll
+        // 3D rotation on scroll
         gsap.to(letter, {
           rotationY: 360,
+          rotationX: 15,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.current,
@@ -57,68 +78,152 @@ export const Hero: React.FC = () => {
           },
         });
 
-        // Simple mouse hover effect
+        // Enhanced mouse hover effect
         letter.addEventListener('mouseenter', () => {
           gsap.to(letter, {
-            scale: 1.1,
+            scale: 1.15,
+            rotationY: 15,
             color: theme === 'dark' ? '#888' : '#555',
-            duration: 0.3,
-            ease: 'power2.out',
+            duration: 0.4,
+            ease: 'back.out(1.4)',
           });
         });
 
         letter.addEventListener('mouseleave', () => {
           gsap.to(letter, {
             scale: 1,
+            rotationY: 0,
             color: theme === 'dark' ? '#fff' : '#000',
-            duration: 0.3,
+            duration: 0.4,
             ease: 'power2.out',
           });
         });
       });
 
-      // Animate background grid lines
-      if (gridRef.current) {
-        const lines = gridRef.current.querySelectorAll('.grid-line');
-        lines.forEach((line: any, index) => {
-          gsap.to(line, {
-            opacity: 0.15,
-            duration: 2 + Math.random(),
+      // Animate morphing mesh gradients
+      if (meshRef.current) {
+        const meshBlobs = meshRef.current.querySelectorAll('.mesh-blob');
+        meshBlobs.forEach((blob: any, index) => {
+          // Morphing animation
+          gsap.to(blob, {
+            scale: [1, 1.3, 0.9, 1.2, 1],
+            x: [0, 60, -40, 50, 0],
+            y: [0, -50, 60, -30, 0],
+            rotation: [0, 15, -10, 20, 0],
+            duration: 20 + index * 3,
             repeat: -1,
-            yoyo: true,
-            delay: index * 0.05,
             ease: 'sine.inOut',
+            delay: index * 2,
+          });
+
+          // Scroll-based morphing
+          gsap.to(blob, {
+            scale: 1.5,
+            opacity: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1,
+            },
           });
         });
       }
 
-      // Animate particles
+      // Animate wave lines
+      if (wavesRef.current) {
+        const waves = wavesRef.current.querySelectorAll('.wave-path');
+        waves.forEach((wave: any, index) => {
+          gsap.to(wave, {
+            attr: { d: wave.getAttribute('data-morph') },
+            duration: 4 + index,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            delay: index * 0.5,
+          });
+        });
+      }
+
+      // Enhanced layered particles with depth
       particlesRef.current.forEach((particle, index) => {
         if (particle) {
-          const startY = 100 + Math.random() * 10;
+          const layer = index % 3; // 3 layers of depth
+          const size = layer === 0 ? 2 : layer === 1 ? 1.5 : 1;
+          const speed = layer === 0 ? 3 : layer === 1 ? 5 : 7;
+          const opacity = layer === 0 ? 0.8 : layer === 1 ? 0.5 : 0.3;
+
+          gsap.set(particle, {
+            width: size,
+            height: size,
+          });
+
           gsap.fromTo(
             particle,
             {
-              y: `${startY}%`,
+              y: '120%',
+              x: Math.random() * window.innerWidth,
               opacity: 0,
             },
             {
-              y: -100,
-              x: Math.sin(index) * 50,
-              opacity: [0, 0.6, 0],
-              duration: 4 + Math.random() * 3,
+              y: '-20%',
+              x: `+=${Math.sin(index) * 100}`,
+              opacity: [0, opacity, opacity, 0],
+              duration: speed + Math.random() * 2,
               repeat: -1,
-              delay: Math.random() * 3,
+              delay: Math.random() * 5,
               ease: 'none',
             }
           );
+
+          // Parallax effect based on layer
+          gsap.to(particle, {
+            y: layer === 0 ? -250 : layer === 1 ? -150 : -50,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1,
+            },
+          });
         }
       });
 
-      // Parallax content
+      // Grid line wave animation
+      if (gridRef.current) {
+        const lines = gridRef.current.querySelectorAll('.grid-line');
+        lines.forEach((line: any, index) => {
+          gsap.to(line, {
+            opacity: Math.random() > 0.5 ? 0.12 : 0.06,
+            duration: 3 + Math.random() * 2,
+            repeat: -1,
+            yoyo: true,
+            delay: index * 0.02,
+            ease: 'sine.inOut',
+          });
+
+          // Subtle wave distortion on scroll
+          gsap.to(line, {
+            scaleY: 1.5,
+            transformOrigin: 'center',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 2,
+            },
+          });
+        });
+      }
+
+      // Parallax content with bounce
       gsap.to('.hero-content', {
-        y: 200,
-        opacity: 0.3,
+        y: 250,
+        opacity: 0.2,
+        scale: 0.95,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -128,11 +233,12 @@ export const Hero: React.FC = () => {
         },
       });
 
-      // Orbs parallax movement
+      // Enhanced orb movements
       gsap.to('.orb-1', {
-        y: -150,
-        x: 100,
-        scale: 1.5,
+        y: -200,
+        x: 150,
+        scale: 2,
+        rotation: 180,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -143,9 +249,10 @@ export const Hero: React.FC = () => {
       });
 
       gsap.to('.orb-2', {
-        y: 150,
-        x: -100,
-        scale: 0.8,
+        y: 200,
+        x: -150,
+        scale: 0.6,
+        rotation: -180,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -159,47 +266,112 @@ export const Hero: React.FC = () => {
     return () => ctx.revert();
   }, [theme]);
 
+  // Mouse-interactive gradient effect
+  useEffect(() => {
+    if (meshRef.current) {
+      gsap.to(meshRef.current, {
+        x: mousePosition.x * 30,
+        y: mousePosition.y * 30,
+        duration: 2,
+        ease: 'power2.out',
+      });
+    }
+  }, [mousePosition]);
+
   return (
     <section
       ref={heroRef}
       id="home"
       className="relative min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-hidden"
     >
+      {/* Morphing Mesh Gradient Background */}
+      <div ref={meshRef} className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
+        <div className="mesh-blob absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-500/20 via-purple-500/15 to-transparent blur-3xl" />
+        <div className="mesh-blob absolute top-1/3 right-1/3 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-500/15 via-blue-500/20 to-transparent blur-3xl" />
+        <div className="mesh-blob absolute bottom-1/4 right-1/4 w-[700px] h-[700px] rounded-full bg-gradient-to-br from-pink-500/15 via-orange-500/10 to-transparent blur-3xl" />
+        <div className="mesh-blob absolute bottom-1/3 left-1/3 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-transparent blur-3xl" />
+        <div className="mesh-blob absolute top-1/2 left-1/2 w-[450px] h-[450px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-indigo-500/10 via-blue-500/15 to-transparent blur-3xl" />
+      </div>
+
+      {/* Flowing Wave Lines */}
+      <svg
+        ref={wavesRef}
+        className="absolute inset-0 w-full h-full pointer-events-none opacity-20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="wave-gradient-1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="transparent" />
+            <stop offset="50%" stopColor="currentColor" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="transparent" />
+          </linearGradient>
+          <linearGradient id="wave-gradient-2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="transparent" />
+            <stop offset="50%" stopColor="currentColor" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="transparent" />
+          </linearGradient>
+        </defs>
+        <path
+          className="wave-path stroke-gray-400 dark:stroke-gray-600"
+          d="M0,200 Q250,150 500,200 T1000,200 T1500,200 T2000,200"
+          data-morph="M0,200 Q250,250 500,200 T1000,200 T1500,200 T2000,200"
+          fill="none"
+          stroke="url(#wave-gradient-1)"
+          strokeWidth="2"
+        />
+        <path
+          className="wave-path stroke-gray-400 dark:stroke-gray-600"
+          d="M0,400 Q300,350 600,400 T1200,400 T1800,400 T2400,400"
+          data-morph="M0,400 Q300,450 600,400 T1200,400 T1800,400 T2400,400"
+          fill="none"
+          stroke="url(#wave-gradient-2)"
+          strokeWidth="1.5"
+        />
+        <path
+          className="wave-path stroke-gray-400 dark:stroke-gray-600"
+          d="M0,600 Q350,550 700,600 T1400,600 T2100,600 T2800,600"
+          data-morph="M0,600 Q350,650 700,600 T1400,600 T2100,600 T2800,600"
+          fill="none"
+          stroke="url(#wave-gradient-1)"
+          strokeWidth="1"
+        />
+      </svg>
+
       {/* Animated Grid Background */}
-      <div ref={gridRef} className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+      <div ref={gridRef} className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         {/* Vertical lines */}
-        {[...Array(25)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <div
             key={`v-${i}`}
             className="grid-line absolute h-full w-px bg-gradient-to-b from-transparent via-gray-400 dark:via-gray-600 to-transparent"
             style={{
-              left: `${(i / 25) * 100}%`,
-              opacity: 0.04,
+              left: `${(i / 30) * 100}%`,
+              opacity: 0.03,
             }}
           />
         ))}
         {/* Horizontal lines */}
-        {[...Array(25)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <div
             key={`h-${i}`}
             className="grid-line absolute w-full h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent"
             style={{
-              top: `${(i / 25) * 100}%`,
-              opacity: 0.04,
+              top: `${(i / 30) * 100}%`,
+              opacity: 0.03,
             }}
           />
         ))}
       </div>
 
-      {/* Floating Particles */}
+      {/* Depth-layered Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(40)].map((_, i) => (
           <div
             key={`particle-${i}`}
             ref={(el) => {
               particlesRef.current[i] = el;
             }}
-            className="absolute w-1 h-1 rounded-full bg-gray-500 dark:bg-gray-500"
+            className="absolute rounded-full bg-gray-500 dark:bg-gray-400"
             style={{
               left: `${Math.random() * 100}%`,
               top: `100%`,
@@ -208,30 +380,32 @@ export const Hero: React.FC = () => {
         ))}
       </div>
 
-      {/* Animated gradient orbs */}
+      {/* Enhanced gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="orb-1 absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-blue-500/10 to-purple-500/10 blur-3xl"
+          className="orb-1 absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-blue-500/15 to-purple-500/15 blur-3xl"
           animate={{
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-            scale: [1, 1.2, 1],
+            x: [0, 80, -20, 0],
+            y: [0, -40, 60, 0],
+            scale: [1, 1.3, 0.9, 1],
+            rotate: [0, 90, 180, 360],
           }}
           transition={{
-            duration: 8,
+            duration: 25,
             repeat: Infinity,
             ease: 'easeInOut',
           }}
         />
         <motion.div
-          className="orb-2 absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-pink-500/10 to-orange-500/10 blur-3xl"
+          className="orb-2 absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/15 to-orange-500/15 blur-3xl"
           animate={{
-            x: [0, -50, 0],
-            y: [0, -30, 0],
-            scale: [1.2, 1, 1.2],
+            x: [0, -80, 20, 0],
+            y: [0, 40, -60, 0],
+            scale: [1.2, 0.8, 1.4, 1.2],
+            rotate: [0, -90, -180, -360],
           }}
           transition={{
-            duration: 10,
+            duration: 30,
             repeat: Infinity,
             ease: 'easeInOut',
           }}
