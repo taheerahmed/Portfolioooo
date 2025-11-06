@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -13,28 +12,15 @@ export const Hero: React.FC = () => {
   const { theme } = useTheme();
   const heroRef = useRef<HTMLDivElement>(null);
   const lettersRef = useRef<HTMLDivElement>(null);
-  const scrollTextRef = useRef<HTMLDivElement>(null);
   const [currentRole, setCurrentRole] = useState(0);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const gridRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentRole((prev) => (prev + 1) % roles.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, []);
-
-  // Mouse move effect
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   useEffect(() => {
@@ -59,7 +45,7 @@ export const Hero: React.FC = () => {
           }
         );
 
-        // Rotation on scroll (keep this)
+        // Rotation on scroll
         gsap.to(letter, {
           rotationY: 360,
           ease: 'none',
@@ -91,19 +77,43 @@ export const Hero: React.FC = () => {
         });
       });
 
-      // Horizontal scrolling text
-      if (scrollTextRef.current) {
-        gsap.to(scrollTextRef.current, {
-          x: '-50%',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: heroRef.current,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 0.5,
-          },
+      // Animate background grid lines
+      if (gridRef.current) {
+        const lines = gridRef.current.querySelectorAll('.grid-line');
+        lines.forEach((line: any, index) => {
+          gsap.to(line, {
+            opacity: 0.15,
+            duration: 2 + Math.random(),
+            repeat: -1,
+            yoyo: true,
+            delay: index * 0.05,
+            ease: 'sine.inOut',
+          });
         });
       }
+
+      // Animate particles
+      particlesRef.current.forEach((particle, index) => {
+        if (particle) {
+          const startY = 100 + Math.random() * 10;
+          gsap.fromTo(
+            particle,
+            {
+              y: `${startY}%`,
+              opacity: 0,
+            },
+            {
+              y: -100,
+              x: Math.sin(index) * 50,
+              opacity: [0, 0.6, 0],
+              duration: 4 + Math.random() * 3,
+              repeat: -1,
+              delay: Math.random() * 3,
+              ease: 'none',
+            }
+          );
+        }
+      });
 
       // Parallax content
       gsap.to('.hero-content', {
@@ -155,6 +165,49 @@ export const Hero: React.FC = () => {
       id="home"
       className="relative min-h-screen flex items-center justify-center bg-white dark:bg-black overflow-hidden"
     >
+      {/* Animated Grid Background */}
+      <div ref={gridRef} className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+        {/* Vertical lines */}
+        {[...Array(25)].map((_, i) => (
+          <div
+            key={`v-${i}`}
+            className="grid-line absolute h-full w-px bg-gradient-to-b from-transparent via-gray-400 dark:via-gray-600 to-transparent"
+            style={{
+              left: `${(i / 25) * 100}%`,
+              opacity: 0.04,
+            }}
+          />
+        ))}
+        {/* Horizontal lines */}
+        {[...Array(25)].map((_, i) => (
+          <div
+            key={`h-${i}`}
+            className="grid-line absolute w-full h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent"
+            style={{
+              top: `${(i / 25) * 100}%`,
+              opacity: 0.04,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={`particle-${i}`}
+            ref={(el) => {
+              particlesRef.current[i] = el;
+            }}
+            className="absolute w-1 h-1 rounded-full bg-gray-500 dark:bg-gray-500"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `100%`,
+            }}
+          />
+        ))}
+      </div>
+
       {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -265,24 +318,6 @@ export const Hero: React.FC = () => {
               Get in Touch
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Scrolling text at bottom */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden py-6 border-t border-gray-200 dark:border-gray-800">
-        <div ref={scrollTextRef} className="flex whitespace-nowrap">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center">
-              <span className="text-5xl md:text-6xl font-bold text-gray-100 dark:text-gray-900 mx-8">
-                CREATIVE DEVELOPER
-              </span>
-              <span className="text-5xl md:text-6xl text-gray-200 dark:text-gray-800 mx-8">•</span>
-              <span className="text-5xl md:text-6xl font-bold text-gray-100 dark:text-gray-900 mx-8">
-                UI/UX DESIGNER
-              </span>
-              <span className="text-5xl md:text-6xl text-gray-200 dark:text-gray-800 mx-8">•</span>
-            </div>
-          ))}
         </div>
       </div>
     </section>
