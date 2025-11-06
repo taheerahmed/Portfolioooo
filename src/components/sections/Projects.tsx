@@ -4,6 +4,9 @@ import { ExternalLink, Github } from 'lucide-react';
 import { projects } from '../../data/projects';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ShinyText } from '../ui/ShinyText';
+import { GlassButton } from '../ui/GlassButton';
+import { AnimatedBadge } from '../ui/AnimatedBadge';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -125,28 +128,26 @@ export const Projects: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         {/* Section header */}
         <div className="max-w-3xl mb-16">
-          <h2 className="text-5xl md:text-7xl font-bold text-black dark:text-white mb-6">
-            Selected Work
-          </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            A collection of projects I've built.
+          <ShinyText
+            text="Selected Work"
+            className="text-5xl md:text-7xl font-bold mb-6"
+          />
+          <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
+            A curated collection of projects showcasing creativity, technical expertise, and innovative solutions.
           </p>
         </div>
 
         {/* Filter buttons */}
         <div className="filters-container flex flex-wrap gap-3 mb-20">
           {['all', 'featured', ...uniqueTags].map((filter) => (
-            <button
+            <AnimatedBadge
               key={filter}
+              active={activeFilter === filter}
               onClick={() => setActiveFilter(filter as Filter)}
-              className={`filter-btn px-6 py-3 text-sm font-medium transition-all duration-300 ${
-                activeFilter === filter
-                  ? 'bg-black dark:bg-white text-white dark:text-black'
-                  : 'bg-transparent border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-black dark:hover:border-white'
-              }`}
+              variant="outline"
             >
               {filter.charAt(0).toUpperCase() + filter.slice(1)}
-            </button>
+            </AnimatedBadge>
           ))}
         </div>
 
@@ -189,52 +190,80 @@ export const Projects: React.FC = () => {
 
               {/* Content */}
               <div className={`project-content ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                <h3 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
+                <motion.h3
+                  className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-6 leading-tight"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                >
                   {project.title}
-                </h3>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
-                  {project.description}
-                </p>
+                </motion.h3>
+
+                <motion.div
+                  className="mb-8 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black rounded-xl border border-gray-200 dark:border-gray-800"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {project.description}
+                  </p>
+                </motion.div>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {project.tags.slice(0, 5).map(tag => (
-                    <span
+                <motion.div
+                  className="flex flex-wrap gap-2 mb-8"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                >
+                  {project.tags.slice(0, 5).map((tag, tagIndex) => (
+                    <motion.span
                       key={tag}
-                      className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                      className="px-4 py-2 text-sm rounded-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 font-medium"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.5 + tagIndex * 0.05 }}
+                      whileHover={{ scale: 1.05, y: -2 }}
                     >
                       {tag}
-                    </span>
+                    </motion.span>
                   ))}
-                </div>
+                </motion.div>
 
                 {/* Links */}
-                <div className="flex gap-4">
+                <motion.div
+                  className="flex flex-wrap gap-4"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                >
                   {project.github && (
-                    <a
-                      href={project.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 text-black dark:text-white hover:gap-3 transition-all"
+                    <GlassButton
+                      variant="primary"
+                      size="md"
+                      icon={<Github size={20} />}
+                      onClick={() => window.open(project.github, '_blank')}
                     >
-                      <Github size={20} />
-                      <span>View Code</span>
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                    </a>
+                      View Code
+                    </GlassButton>
                   )}
                   {project.demo && (
-                    <a
-                      href={project.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 text-black dark:text-white hover:gap-3 transition-all"
+                    <GlassButton
+                      variant="secondary"
+                      size="md"
+                      icon={<ExternalLink size={20} />}
+                      onClick={() => window.open(project.demo, '_blank')}
                     >
-                      <ExternalLink size={20} />
-                      <span>Live Demo</span>
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                    </a>
+                      Live Demo
+                    </GlassButton>
                   )}
-                </div>
+                </motion.div>
               </div>
             </div>
           ))}
@@ -310,28 +339,26 @@ export const Projects: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex gap-4">
+                      <div className="flex flex-wrap gap-4">
                         {project.github && (
-                          <a
-                            href={project.github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black font-medium flex items-center gap-2 hover:shadow-xl transition-shadow"
+                          <GlassButton
+                            variant="primary"
+                            size="lg"
+                            icon={<Github size={20} />}
+                            onClick={() => window.open(project.github, '_blank')}
                           >
-                            <Github size={20} />
                             View Code
-                          </a>
+                          </GlassButton>
                         )}
                         {project.demo && (
-                          <a
-                            href={project.demo}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-8 py-4 border-2 border-black dark:border-white text-black dark:text-white font-medium flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                          <GlassButton
+                            variant="ghost"
+                            size="lg"
+                            icon={<ExternalLink size={20} />}
+                            onClick={() => window.open(project.demo, '_blank')}
                           >
-                            <ExternalLink size={20} />
                             Live Demo
-                          </a>
+                          </GlassButton>
                         )}
                       </div>
                     </div>

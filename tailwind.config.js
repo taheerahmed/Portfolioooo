@@ -40,6 +40,7 @@ export default {
         'code-pulse': 'code-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'typing': 'typing 3.5s steps(40, end)',
         'cursor-blink': 'cursor-blink 0.75s step-end infinite',
+        'shimmer': 'shimmer 2s linear infinite',
       },
       keyframes: {
         'pulse-line': {
@@ -82,6 +83,10 @@ export default {
         'cursor-blink': {
           '0%, 100%': { opacity: 0 },
           '50%': { opacity: 1 },
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
       boxShadow: {

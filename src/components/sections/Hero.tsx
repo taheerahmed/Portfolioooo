@@ -39,43 +39,27 @@ export const Hero: React.FC = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate letters with creative effects
+      // Animate letters with simple entrance
       const letters = gsap.utils.toArray('.hero-letter');
 
       letters.forEach((letter: any, index) => {
-        // Complex entrance animation with elastic bounce
-        const tl = gsap.timeline();
-
-        tl.fromTo(
+        // Simple entrance animation
+        gsap.fromTo(
           letter,
           {
             opacity: 0,
-            scale: 0,
-            rotation: -180,
-            y: -200,
+            y: 50,
           },
           {
             opacity: 1,
-            scale: 1,
-            rotation: 0,
             y: 0,
-            duration: 1.5,
-            delay: index * 0.08,
-            ease: 'elastic.out(1, 0.6)',
+            duration: 0.8,
+            delay: index * 0.05,
+            ease: 'power3.out',
           }
         );
 
-        // Continuous floating animation
-        gsap.to(letter, {
-          y: -20,
-          duration: 2 + index * 0.2,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: index * 0.1,
-        });
-
-        // Rotation on scroll
+        // Rotation on scroll (keep this)
         gsap.to(letter, {
           rotationY: 360,
           ease: 'none',
@@ -87,50 +71,27 @@ export const Hero: React.FC = () => {
           },
         });
 
-        // Advanced mouse parallax with 3D effect
+        // Simple mouse hover effect
         letter.addEventListener('mouseenter', () => {
           gsap.to(letter, {
-            scale: 1.3,
-            z: 100,
-            rotationX: 20,
-            rotationY: 20,
+            scale: 1.1,
             color: theme === 'dark' ? '#888' : '#555',
-            textShadow: theme === 'dark'
-              ? '0 20px 40px rgba(255,255,255,0.3)'
-              : '0 20px 40px rgba(0,0,0,0.3)',
-            duration: 0.4,
-            ease: 'power3.out',
+            duration: 0.3,
+            ease: 'power2.out',
           });
         });
 
         letter.addEventListener('mouseleave', () => {
           gsap.to(letter, {
             scale: 1,
-            z: 0,
-            rotationX: 0,
-            rotationY: 0,
             color: theme === 'dark' ? '#fff' : '#000',
-            textShadow: 'none',
-            duration: 0.5,
-            ease: 'power3.out',
+            duration: 0.3,
+            ease: 'power2.out',
           });
         });
-
-        // Random glitch effect occasionally
-        setInterval(() => {
-          if (Math.random() > 0.98) {
-            gsap.to(letter, {
-              x: Math.random() * 20 - 10,
-              duration: 0.1,
-              yoyo: true,
-              repeat: 3,
-              ease: 'power1.inOut',
-            });
-          }
-        }, 100);
       });
 
-      // Horizontal scrolling text with speed variation
+      // Horizontal scrolling text
       if (scrollTextRef.current) {
         gsap.to(scrollTextRef.current, {
           x: '-50%',
@@ -144,11 +105,10 @@ export const Hero: React.FC = () => {
         });
       }
 
-      // Parallax content with rotation
+      // Parallax content
       gsap.to('.hero-content', {
         y: 200,
-        opacity: 0.2,
-        scale: 0.95,
+        opacity: 0.3,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -231,14 +191,12 @@ export const Hero: React.FC = () => {
           {/* Large name with interactive letters */}
           <div
             ref={lettersRef}
-            className="mb-8"
+            className="mb-6 md:mb-8"
             style={{
               perspective: '1000px',
-              transform: `rotateX(${mousePosition.y * 0.1}deg) rotateY(${mousePosition.x * 0.1}deg)`,
-              transition: 'transform 0.3s ease-out',
             }}
           >
-            <h1 className="text-7xl md:text-[10rem] lg:text-[14rem] font-bold leading-none tracking-tighter">
+            <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold leading-none tracking-tighter">
               {'TAHEER'.split('').map((letter, i) => (
                 <span
                   key={i}
@@ -255,21 +213,21 @@ export const Hero: React.FC = () => {
           </div>
 
           {/* Subtitle with stagger animation */}
-          <div className="mb-16">
+          <div className="mb-12 md:mb-16">
             <motion.div
               key={currentRole}
               initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
               transition={{ duration: 0.5 }}
-              className="text-3xl md:text-5xl lg:text-6xl text-gray-600 dark:text-gray-400 font-light"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-600 dark:text-gray-400 font-light"
             >
               {roles[currentRole]}
             </motion.div>
           </div>
 
           {/* CTA with magnetic effect */}
-          <div className="flex flex-wrap gap-6 justify-center mb-24">
+          <div className="flex flex-wrap gap-4 md:gap-6 justify-center mb-16 md:mb-24">
             <button
               onClick={() => {
                 document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
