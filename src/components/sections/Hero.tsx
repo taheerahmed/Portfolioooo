@@ -187,11 +187,11 @@ export const Hero: React.FC = () => {
 
       {/* Main content */}
       <div className="container mx-auto px-4 md:px-6 z-10 hero-content">
-        <div className="max-w-7xl mx-auto text-center">
+        <div className="max-w-7xl mx-auto text-center flex flex-col items-center justify-center">
           {/* Large name with interactive letters */}
           <div
             ref={lettersRef}
-            className="mb-6 md:mb-8"
+            className="mb-8 md:mb-10"
             style={{
               perspective: '1000px',
             }}
@@ -213,7 +213,7 @@ export const Hero: React.FC = () => {
           </div>
 
           {/* Subtitle with stagger animation */}
-          <div className="mb-12 md:mb-16">
+          <div className="mb-16 md:mb-20">
             <motion.div
               key={currentRole}
               initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
@@ -227,7 +227,7 @@ export const Hero: React.FC = () => {
           </div>
 
           {/* CTA with magnetic effect */}
-          <div className="flex flex-wrap gap-4 md:gap-6 justify-center mb-16 md:mb-24">
+          <div className="flex flex-wrap gap-4 md:gap-6 justify-center">
             <button
               onClick={() => {
                 document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
@@ -241,10 +241,10 @@ export const Hero: React.FC = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translate(0, 0)';
               }}
-              className="group relative px-12 py-5 bg-black dark:bg-white text-white dark:text-black text-lg font-medium overflow-hidden transition-transform duration-300"
+              className="group relative px-12 py-5 bg-black dark:bg-white text-white dark:text-black text-lg font-medium overflow-hidden transition-transform duration-300 rounded-xl"
             >
               <span className="relative z-10">Explore Work</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-black dark:from-gray-200 dark:to-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-black dark:from-gray-200 dark:to-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500 rounded-xl" />
             </button>
 
             <button
@@ -260,30 +260,11 @@ export const Hero: React.FC = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translate(0, 0)';
               }}
-              className="px-12 py-5 border-2 border-black dark:border-white text-black dark:text-white text-lg font-medium hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all duration-300"
+              className="px-12 py-5 border-2 border-black dark:border-white text-black dark:text-white text-lg font-medium hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all duration-300 rounded-xl"
             >
               Get in Touch
             </button>
           </div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            className="inline-flex flex-col items-center gap-3 cursor-pointer"
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            onClick={() => {
-              document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <span className="text-xs uppercase tracking-widest text-gray-400">Scroll</span>
-            <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center p-2">
-              <motion.div
-                className="w-1 h-2 bg-gray-400 rounded-full"
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-            </div>
-          </motion.div>
         </div>
       </div>
 

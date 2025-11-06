@@ -30,7 +30,7 @@ export const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({
     <motion.button
       onClick={onClick}
       className={`
-        relative px-5 py-2.5 rounded-full text-sm font-medium
+        relative px-5 py-2.5 rounded-lg text-sm font-medium
         transition-all duration-300 ease-out overflow-hidden
         ${variants[variant]}
       `}

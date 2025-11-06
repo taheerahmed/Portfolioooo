@@ -40,7 +40,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        relative group rounded-full font-medium
+        relative group rounded-xl font-medium
         transition-all duration-300 ease-out
         disabled:opacity-50 disabled:cursor-not-allowed
         ${sizeClasses[size]}
@@ -51,8 +51,8 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
       whileTap={{ scale: disabled ? 1 : 0.95 }}
     >
       {/* Shine effect */}
-      <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 dark:via-black/20 to-transparent animate-shimmer bg-[length:200%_100%]" />
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 dark:via-black/20 to-transparent animate-shimmer bg-[length:200%_100%]" />
       </div>
 
       {/* Content */}
