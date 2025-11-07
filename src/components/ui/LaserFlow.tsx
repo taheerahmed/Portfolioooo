@@ -11,22 +11,86 @@ interface NetworkNode {
   size: number;
   color: string;
   label: string;
-  icon: string;
+  speed: number; // Fast, medium, or slow
+  logo?: string;
 }
 
 const LaserFlow: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Define sophisticated network nodes
+  // Define network nodes with real tool data
   const nodes: NetworkNode[] = [
-    { id: 'center', x: 50, y: 50, size: 80, color: '#3b82f6', label: 'YOU', icon: '⚡' },
-    { id: 'cursor', x: 20, y: 25, size: 60, color: '#06b6d4', label: 'Cursor', icon: '◆' },
-    { id: 'claude', x: 80, y: 25, size: 60, color: '#8b5cf6', label: 'Claude', icon: '◆' },
-    { id: 'gemini', x: 15, y: 65, size: 55, color: '#ec4899', label: 'Gemini', icon: '◆' },
-    { id: 'github', x: 85, y: 65, size: 55, color: '#10b981', label: 'GitHub', icon: '◆' },
-    { id: 'notion', x: 35, y: 85, size: 50, color: '#f59e0b', label: 'Notion', icon: '◆' },
-    { id: 'windsurf', x: 65, y: 15, size: 50, color: '#06b6d4', label: 'Windsurf', icon: '◆' },
+    {
+      id: 'center',
+      x: 50,
+      y: 50,
+      size: 140,
+      color: '#3b82f6',
+      label: 'YOU',
+      speed: 1,
+      logo: '⚡'
+    },
+    {
+      id: 'cursor',
+      x: 20,
+      y: 25,
+      size: 70,
+      color: '#06b6d4',
+      label: 'Cursor',
+      speed: 0.8,
+      logo: '💻'
+    },
+    {
+      id: 'claude',
+      x: 80,
+      y: 25,
+      size: 70,
+      color: '#8b5cf6',
+      label: 'Claude',
+      speed: 1.2,
+      logo: '🤖'
+    },
+    {
+      id: 'gemini',
+      x: 15,
+      y: 65,
+      size: 65,
+      color: '#ec4899',
+      label: 'Gemini',
+      speed: 0.6,
+      logo: '✨'
+    },
+    {
+      id: 'github',
+      x: 85,
+      y: 65,
+      size: 65,
+      color: '#10b981',
+      label: 'GitHub',
+      speed: 1.5,
+      logo: '🐙'
+    },
+    {
+      id: 'notion',
+      x: 35,
+      y: 85,
+      size: 60,
+      color: '#f59e0b',
+      label: 'Notion',
+      speed: 0.9,
+      logo: '📝'
+    },
+    {
+      id: 'windsurf',
+      x: 65,
+      y: 15,
+      size: 60,
+      color: '#06b6d4',
+      label: 'Windsurf',
+      speed: 1.1,
+      logo: '🌊'
+    },
   ];
 
   useEffect(() => {
@@ -62,7 +126,7 @@ const LaserFlow: React.FC = () => {
       nodes.slice(1).forEach((node, index) => {
         const nodePos = toPixels(node);
 
-        // Create flowing gradient
+        // Create flowing gradient based on node speed
         const gradient = ctx.createLinearGradient(
           centerPos.x,
           centerPos.y,
@@ -70,7 +134,7 @@ const LaserFlow: React.FC = () => {
           nodePos.y
         );
 
-        const offset = (time * 0.5 + index * 0.3) % 1;
+        const offset = (time * node.speed * 0.4 + index * 0.3) % 1;
 
         gradient.addColorStop(0, `${node.color}00`);
         gradient.addColorStop(Math.max(0, offset - 0.2), `${node.color}00`);
@@ -96,7 +160,7 @@ const LaserFlow: React.FC = () => {
         ctx.shadowBlur = 0;
       });
 
-      // Draw connecting lines between outer nodes
+      // Draw connecting lines between outer nodes (mesh network)
       for (let i = 1; i < nodes.length - 1; i++) {
         const node1 = nodes[i];
         const node2 = nodes[i + 1];
@@ -124,13 +188,14 @@ const LaserFlow: React.FC = () => {
       }
     };
 
-    // Draw particles
+    // Draw particles with varied speeds
     const drawParticles = () => {
       nodes.slice(1).forEach((node, index) => {
         const centerPos = toPixels(nodes[0]);
         const nodePos = toPixels(node);
 
-        const progress = ((time * 0.3 + index * 0.15) % 1);
+        // Use node's speed for particle animation
+        const progress = ((time * node.speed * 0.25 + index * 0.15) % 1);
 
         // Curved path calculation
         const cpX = (centerPos.x + nodePos.x) / 2 + Math.sin(time + index) * 50;
@@ -140,7 +205,8 @@ const LaserFlow: React.FC = () => {
         const x = (1 - t) * (1 - t) * centerPos.x + 2 * (1 - t) * t * cpX + t * t * nodePos.x;
         const y = (1 - t) * (1 - t) * centerPos.y + 2 * (1 - t) * t * cpY + t * t * nodePos.y;
 
-        // Draw particle
+        // Draw main particle - size based on speed
+        const particleSize = 4 + node.speed * 2;
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, 15);
         gradient.addColorStop(0, node.color);
         gradient.addColorStop(0.5, `${node.color}80`);
@@ -150,19 +216,20 @@ const LaserFlow: React.FC = () => {
         ctx.shadowBlur = 15;
         ctx.shadowColor = node.color;
         ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.arc(x, y, particleSize, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Trail
-        for (let i = 1; i <= 3; i++) {
-          const trailT = Math.max(0, progress - i * 0.05);
+        // Trail - longer for faster particles
+        const trailLength = Math.floor(2 + node.speed * 2);
+        for (let i = 1; i <= trailLength; i++) {
+          const trailT = Math.max(0, progress - i * 0.04);
           const tx = (1 - trailT) * (1 - trailT) * centerPos.x + 2 * (1 - trailT) * trailT * cpX + trailT * trailT * nodePos.x;
           const ty = (1 - trailT) * (1 - trailT) * centerPos.y + 2 * (1 - trailT) * trailT * cpY + trailT * trailT * nodePos.y;
 
-          ctx.fillStyle = `${node.color}${Math.floor((1 - i / 4) * 50).toString(16).padStart(2, '0')}`;
+          ctx.fillStyle = `${node.color}${Math.floor((1 - i / (trailLength + 1)) * 60).toString(16).padStart(2, '0')}`;
           ctx.beginPath();
-          ctx.arc(tx, ty, 3, 0, Math.PI * 2);
+          ctx.arc(tx, ty, particleSize * 0.6, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -206,7 +273,7 @@ const LaserFlow: React.FC = () => {
       {/* Canvas for connections and particles */}
       <canvas ref={canvasRef} className="absolute inset-0" />
 
-      {/* HTML nodes for crisp rendering */}
+      {/* HTML nodes with logos */}
       <div className="absolute inset-0">
         {nodes.map((node, index) => (
           <div
@@ -220,21 +287,25 @@ const LaserFlow: React.FC = () => {
           >
             {/* Node circle */}
             <div
-              className="relative flex items-center justify-center rounded-full transition-all duration-300"
+              className="relative flex items-center justify-center rounded-full transition-all duration-300 group hover:scale-110"
               style={{
                 width: `${node.size}px`,
                 height: `${node.size}px`,
-                background: `radial-gradient(circle at 30% 30%, ${node.color}40, ${node.color}20)`,
-                border: `2px solid ${node.color}`,
-                boxShadow: `0 0 30px ${node.color}60, 0 0 60px ${node.color}30, inset 0 0 20px ${node.color}20`,
+                background: `radial-gradient(circle at 30% 30%, ${node.color}50, ${node.color}30)`,
+                border: `3px solid ${node.color}`,
+                boxShadow: `0 0 30px ${node.color}60, 0 0 60px ${node.color}30, inset 0 0 30px ${node.color}20`,
               }}
             >
-              {/* Icon */}
+              {/* Logo/Icon */}
               <span
-                className="text-2xl font-bold"
-                style={{ color: node.color, filter: 'brightness(1.5)' }}
+                className="font-bold"
+                style={{
+                  color: node.color,
+                  filter: 'brightness(1.5) drop-shadow(0 0 10px currentColor)',
+                  fontSize: node.id === 'center' ? '4rem' : '2.5rem'
+                }}
               >
-                {node.icon}
+                {node.logo}
               </span>
 
               {/* Pulse rings */}
@@ -246,12 +317,35 @@ const LaserFlow: React.FC = () => {
                   animationDuration: `${2 + index * 0.3}s`,
                 }}
               />
+
+              {/* Speed indicator for center node */}
+              {node.id === 'center' && (
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                  <div className="flex gap-1">
+                    {nodes.slice(1).map((n, i) => (
+                      <div
+                        key={i}
+                        className="w-1 h-2 rounded-full"
+                        style={{
+                          background: n.color,
+                          height: `${n.speed * 8}px`,
+                          opacity: 0.6,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Label */}
             <div
-              className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold tracking-wider opacity-80"
-              style={{ color: node.color }}
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-bold tracking-wider opacity-90"
+              style={{
+                color: node.color,
+                textShadow: `0 0 10px ${node.color}80`,
+                fontSize: node.id === 'center' ? '1.1rem' : '0.9rem'
+              }}
             >
               {node.label}
             </div>

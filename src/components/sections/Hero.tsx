@@ -15,7 +15,7 @@ export const Hero: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Sophisticated TAHEER entrance
+  // TAHEER entrance animation
   useEffect(() => {
     const letters = gsap.utils.toArray('.hero-letter');
 
@@ -40,16 +40,16 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black"
     >
-      {/* Animated grid background */}
-      <div className="absolute inset-0 opacity-20">
+      {/* Subtle grid background */}
+      <div className="absolute inset-0 opacity-10 dark:opacity-5">
         <div
           className="absolute inset-0"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
+              linear-gradient(to right, rgba(59, 130, 246, 0.3) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(59, 130, 246, 0.3) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px',
           }}
@@ -57,17 +57,17 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Network visualization */}
-      <div className="absolute inset-0 opacity-60">
+      <div className="absolute inset-0 opacity-50 dark:opacity-70">
         <LaserFlow />
       </div>
 
-      {/* Radial gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-slate-950/80" />
+      {/* Gradient overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-transparent dark:via-black/50" />
 
       {/* Main content */}
       <div className="container mx-auto px-6 md:px-8 lg:px-12 z-10 relative">
         <div className="max-w-7xl mx-auto">
-          {/* Name - Extra large and bold */}
+          {/* Name - Fixed visibility with proper colors */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -75,22 +75,20 @@ export const Hero: React.FC = () => {
             className="mb-6"
             style={{ perspective: '1000px' }}
           >
-            <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] font-black leading-none tracking-tighter">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
-                {'TAHEER'.split('').map((letter, i) => (
-                  <span
-                    key={i}
-                    className="hero-letter inline-block"
-                    style={{ transformStyle: 'preserve-3d' }}
-                  >
-                    {letter}
-                  </span>
-                ))}
-              </span>
+            <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] font-black leading-none tracking-tighter text-black dark:text-white">
+              {'TAHEER'.split('').map((letter, i) => (
+                <span
+                  key={i}
+                  className="hero-letter inline-block"
+                  style={{ transformStyle: 'preserve-3d' }}
+                >
+                  {letter}
+                </span>
+              ))}
             </h1>
           </motion.div>
 
-          {/* Role subtitle with smoother transitions */}
+          {/* Role subtitle with smooth transitions */}
           <div className="mb-12 md:mb-16">
             <motion.div
               key={currentRole}
@@ -98,11 +96,9 @@ export const Hero: React.FC = () => {
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
               transition={{ duration: 0.7, ease: 'easeOut' }}
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light tracking-wide"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-gray-700 dark:text-gray-300"
             >
-              <span className="text-gray-300">
-                {roles[currentRole]}
-              </span>
+              {roles[currentRole]}
             </motion.div>
           </div>
 
@@ -111,13 +107,13 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-gray-400 text-base md:text-lg lg:text-xl mb-12 md:mb-16 max-w-2xl leading-relaxed"
+            className="text-gray-600 dark:text-gray-400 text-base md:text-lg lg:text-xl mb-12 md:mb-16 max-w-2xl leading-relaxed"
           >
             Crafting exceptional digital experiences at the intersection of design,
             engineering, and artificial intelligence.
           </motion.p>
 
-          {/* CTA Buttons with premium design */}
+          {/* CTA Buttons with theme-aware design */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -143,12 +139,7 @@ export const Hero: React.FC = () => {
               onClick={() => {
                 document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="group relative px-10 py-4 text-gray-300 text-base md:text-lg font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:text-white"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
+              className="group relative px-10 py-4 text-gray-800 dark:text-gray-200 text-base md:text-lg font-semibold rounded-xl border-2 border-gray-300 dark:border-gray-700 hover:border-blue-600 dark:hover:border-blue-400 overflow-hidden transition-all duration-300 hover:scale-105"
             >
               <span className="relative z-10 flex items-center gap-2">
                 Get in Touch
@@ -156,7 +147,6 @@ export const Hero: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-violet-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
           </motion.div>
 
@@ -167,12 +157,12 @@ export const Hero: React.FC = () => {
             transition={{ duration: 1, delay: 1 }}
             className="mt-16 md:mt-20"
           >
-            <div className="flex items-center gap-8 text-sm text-gray-500">
+            <div className="flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span>Available for projects</span>
               </div>
-              <div className="h-4 w-px bg-gray-700" />
+              <div className="h-4 w-px bg-gray-300 dark:bg-gray-700" />
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
