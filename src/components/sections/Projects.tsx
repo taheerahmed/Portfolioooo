@@ -151,87 +151,126 @@ export const Projects: React.FC = () => {
         </div>
       </section>
 
-      {/* Modal */}
+      {/* Modal - Full Screen Minimalistic Design */}
       <AnimatePresence>
         {selectedProject !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedProject(null)}
-            className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-white dark:bg-black z-50 overflow-y-auto"
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-900 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+            {/* Close Button - Minimalistic */}
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="fixed top-6 md:top-8 right-6 md:right-12 z-20 w-12 h-12 flex items-center justify-center text-black dark:text-white hover:opacity-50 transition-opacity"
             >
-              {/* Header */}
-              <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6 flex items-center justify-between z-10">
-                <h3 className="text-2xl font-bold text-black dark:text-white">
-                  {projects[selectedProject].title}
-                </h3>
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="min-h-screen px-6 md:px-12 lg:px-20 py-16 md:py-24">
+              {/* Project Number */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-sm uppercase tracking-widest text-gray-400 dark:text-gray-600 mb-4"
+              >
+                Project {String(selectedProject + 1).padStart(2, '0')}
+              </motion.div>
+
+              {/* Project Title - Massive */}
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl md:text-6xl lg:text-7xl font-black text-black dark:text-white mb-8 md:mb-12 leading-[0.95] tracking-tight max-w-5xl"
+              >
+                {projects[selectedProject].title}
+              </motion.h2>
+
+              {/* Tags - Minimalistic */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-wrap gap-3 mb-12 md:mb-16"
+              >
+                {projects[selectedProject].tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs uppercase tracking-widest text-gray-600 dark:text-gray-400"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </motion.div>
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-16 md:mb-20 max-w-3xl leading-relaxed"
+              >
+                {projects[selectedProject].longDescription || projects[selectedProject].description}
+              </motion.p>
+
+              {/* Image - Full Width */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-16 md:mb-20 overflow-hidden"
+              >
+                <img
+                  src={projects[selectedProject].image}
+                  alt={projects[selectedProject].title}
+                  className="w-full h-auto"
+                />
+              </motion.div>
+
+              {/* Links - Minimalistic Text Links */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex flex-col sm:flex-row gap-8 md:gap-12 mb-20"
+              >
+                {projects[selectedProject].link && (
+                  <a
+                    href={projects[selectedProject].link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 text-black dark:text-white"
+                  >
+                    <span className="text-lg font-medium">Visit Project</span>
+                    <ExternalLink className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </a>
+                )}
+                {projects[selectedProject].github && (
+                  <a
+                    href={projects[selectedProject].github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 text-black dark:text-white"
+                  >
+                    <span className="text-lg font-medium">View Source</span>
+                    <Github className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  </a>
+                )}
+              </motion.div>
+
+              {/* Scroll Indicator */}
+              <div className="text-center pb-8">
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                  className="text-sm uppercase tracking-widest text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white transition-colors"
                 >
-                  <X className="w-6 h-6" />
+                  Close
                 </button>
               </div>
-
-              {/* Content */}
-              <div className="p-6 md:p-8">
-                <div className="rounded-xl overflow-hidden mb-8">
-                  <img
-                    src={projects[selectedProject].image}
-                    alt={projects[selectedProject].title}
-                    className="w-full"
-                  />
-                </div>
-
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                  {projects[selectedProject].longDescription || projects[selectedProject].description}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {projects[selectedProject].tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-full text-sm font-medium"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex gap-4">
-                  {projects[selectedProject].link && (
-                    <a
-                      href={projects[selectedProject].link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg font-medium hover:scale-105 transition-transform"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                      Visit Project
-                    </a>
-                  )}
-                  {projects[selectedProject].github && (
-                    <a
-                      href={projects[selectedProject].github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-6 py-3 border-2 border-black dark:border-white text-black dark:text-white rounded-lg font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
-                    >
-                      <Github className="w-5 h-5" />
-                      View Code
-                    </a>
-                  )}
-                </div>
-              </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
