@@ -50,31 +50,32 @@ export const Projects: React.FC = () => {
         className="relative bg-white dark:bg-black overflow-hidden"
         style={{ height: '100vh' }}
       >
-        {/* Header */}
-        <div className="absolute top-8 md:top-12 left-6 md:left-12 z-20">
-          <h2 className="text-4xl md:text-6xl font-black text-black dark:text-white">
+        {/* Header - Fixed positioning, better spacing */}
+        <div className="absolute top-6 md:top-8 left-6 md:left-12 z-20">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-black dark:text-white">
             Selected Work
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
             {projects.length} Projects
           </p>
         </div>
 
-        {/* Horizontal scroll container */}
+        {/* Horizontal scroll container - adjusted positioning */}
         <div
           ref={containerRef}
-          className="absolute top-0 left-0 flex items-center h-full"
+          className="absolute top-0 left-0 flex items-center h-full pt-24 md:pt-28"
           style={{ paddingLeft: '50vw', paddingRight: '50vw' }}
         >
           {projects.map((project, index) => (
             <div
               key={project.id}
-              className="flex-shrink-0 px-6 md:px-8"
-              style={{ width: '90vw', maxWidth: '900px' }}
+              className="flex-shrink-0 px-4 md:px-6"
+              style={{ width: '85vw', maxWidth: '750px' }}
             >
               <motion.div
                 onClick={() => setSelectedProject(index)}
-                className="group relative h-[75vh] rounded-2xl overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-900"
+                className="group relative rounded-2xl overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-900"
+                style={{ height: 'calc(100vh - 180px)', maxHeight: '600px' }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: '-10%' }}
@@ -92,18 +93,18 @@ export const Projects: React.FC = () => {
                 </div>
 
                 {/* Number */}
-                <div className="absolute top-6 right-6 text-7xl md:text-8xl font-black text-white/10">
+                <div className="absolute top-4 right-4 md:top-6 md:right-6 text-6xl md:text-7xl font-black text-white/10">
                   {String(index + 1).padStart(2, '0')}
                 </div>
 
                 {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
                   {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-3">
                     {project.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="px-3 py-1 text-xs font-medium bg-white/20 backdrop-blur-sm text-white rounded-full uppercase tracking-wide"
+                        className="px-2.5 py-1 text-xs font-medium bg-white/20 backdrop-blur-sm text-white rounded-full uppercase tracking-wide"
                       >
                         {tag}
                       </span>
@@ -111,17 +112,17 @@ export const Projects: React.FC = () => {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight">
+                  <h3 className="text-2xl md:text-4xl font-bold text-white mb-2 leading-tight">
                     {project.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-200 text-base md:text-lg mb-6 max-w-2xl line-clamp-2">
+                  <p className="text-gray-200 text-sm md:text-base mb-4 max-w-xl line-clamp-2">
                     {project.description}
                   </p>
 
                   {/* CTA */}
-                  <div className="flex items-center gap-2 text-white text-sm font-medium uppercase tracking-wider">
+                  <div className="flex items-center gap-2 text-white text-xs md:text-sm font-medium uppercase tracking-wider">
                     <span>View Project</span>
                     <motion.span
                       animate={{ x: [0, 5, 0] }}
@@ -137,9 +138,9 @@ export const Projects: React.FC = () => {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 md:bottom-12 right-6 md:right-12 z-20">
+        <div className="absolute bottom-6 md:bottom-8 right-6 md:right-12 z-20">
           <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-            <span className="text-sm uppercase tracking-widest">Scroll</span>
+            <span className="text-xs uppercase tracking-widest">Scroll</span>
             <motion.div
               animate={{ x: [0, 8, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
