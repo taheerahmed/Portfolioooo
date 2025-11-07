@@ -1,374 +1,356 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Github } from 'lucide-react';
+import { ExternalLink, Github, X } from 'lucide-react';
 import { projects } from '../../data/projects';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ShinyText } from '../ui/ShinyText';
-import { GlassButton } from '../ui/GlassButton';
-import { AnimatedBadge } from '../ui/AnimatedBadge';
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Filter = 'all' | 'featured' | string;
-
 export const Projects: React.FC = () => {
-  const [activeFilter, setActiveFilter] = useState<Filter>('all');
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  const uniqueTags = Array.from(
-    new Set(projects.flatMap(project => project.tags))
-  ).slice(0, 5);
-
-  const filteredProjects = projects.filter(project => {
-    if (activeFilter === 'all') return true;
-    if (activeFilter === 'featured') return project.featured;
-    return project.tags.includes(activeFilter);
-  });
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const circleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!scrollContainerRef.current || !sectionRef.current) return;
+
+    const container = scrollContainerRef.current;
+    const section = sectionRef.current;
+
+    // Horizontal scroll with mouse wheel
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+      e.preventDefault();
+      container.scrollLeft += e.deltaY;
+    };
+
+    section.addEventListener('wheel', handleWheel, { passive: false });
+
+    // GSAP Horizontal scroll pinning
     const ctx = gsap.context(() => {
-      // Animate project cards with clip-path reveal
-      const cards = gsap.utils.toArray('.project-card');
+      const totalScroll = container.scrollWidth - container.clientWidth;
 
+      gsap.to(container, {
+        scrollLeft: totalScroll,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: () => `+=${totalScroll + window.innerHeight}`,
+          pin: true,
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // Animate cards on scroll
+      const cards = gsap.utils.toArray('.project-card-horizontal');
       cards.forEach((card: any, index) => {
-        // Image reveal effect
-        const image = card.querySelector('.project-image-wrapper');
-        const overlay = card.querySelector('.project-overlay');
-
         gsap.fromTo(
-          image,
-          {
-            clipPath: 'inset(100% 0% 0% 0%)',
-          },
-          {
-            clipPath: 'inset(0% 0% 0% 0%)',
-            duration: 1.2,
-            ease: 'power4.out',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          }
-        );
-
-        // Content fade up
-        const content = card.querySelector('.project-content');
-        gsap.fromTo(
-          content,
+          card,
           {
             opacity: 0,
-            y: 40,
+            scale: 0.9,
+            rotateY: -15,
           },
           {
             opacity: 1,
-            y: 0,
-            duration: 0.8,
-            delay: 0.3,
+            scale: 1,
+            rotateY: 0,
+            duration: 1,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
+              containerAnimation: ScrollTrigger.getById('horizontal-scroll'),
+              start: 'left right',
+              end: 'left center',
+              scrub: 1,
             },
           }
         );
-
-        // Number reveal
-        const number = card.querySelector('.project-number');
-        if (number) {
-          gsap.fromTo(
-            number,
-            {
-              opacity: 0,
-              scale: 0,
-            },
-            {
-              opacity: 1,
-              scale: 1,
-              duration: 0.6,
-              delay: 0.5,
-              ease: 'back.out(1.7)',
-              scrollTrigger: {
-                trigger: card,
-                start: 'top 85%',
-                toggleActions: 'play none none none',
-              },
-            }
-          );
-        }
       });
 
-      // Filter buttons animation
-      gsap.fromTo(
-        '.filter-btn',
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'power3.out',
+      // Circle transition animation
+      if (circleRef.current) {
+        const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: '.filters-container',
-            start: 'top 90%',
-            toggleActions: 'play none none none',
+            trigger: circleRef.current,
+            start: 'left center',
+            end: 'left left',
+            scrub: 1,
           },
-        }
-      );
-    }, sectionRef);
+        });
 
-    return () => ctx.revert();
-  }, [filteredProjects]);
+        tl.to('.project-card-horizontal', {
+          scale: 0.5,
+          opacity: 0,
+          stagger: 0.1,
+          duration: 0.5,
+        })
+          .to(circleRef.current, {
+            scale: 5,
+            opacity: 0,
+            duration: 1,
+          })
+          .to(section, {
+            opacity: 0,
+            duration: 0.5,
+          });
+      }
+    }, section);
+
+    return () => {
+      section.removeEventListener('wheel', handleWheel);
+      ctx.revert();
+    };
+  }, []);
 
   return (
-    <section ref={sectionRef} id="projects" className="py-32 bg-white dark:bg-black">
-      <div className="container mx-auto px-4 md:px-6">
+    <>
+      <section
+        id="projects"
+        ref={sectionRef}
+        className="relative min-h-screen bg-white dark:bg-black overflow-hidden"
+      >
         {/* Section header */}
-        <div className="max-w-3xl mb-16">
-          <ShinyText
-            text="Selected Work"
-            className="text-5xl md:text-7xl font-bold mb-6"
-          />
-          <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
-            A curated collection of projects showcasing creativity, technical expertise, and innovative solutions.
-          </p>
+        <div className="absolute top-12 left-6 md:left-12 lg:left-16 z-20">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-black dark:text-white tracking-tighter">
+              Selected Work
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mt-4">
+              {projects.length} Projects
+            </p>
+          </motion.div>
         </div>
 
-        {/* Filter buttons */}
-        <div className="filters-container flex flex-wrap gap-3 mb-20">
-          {['all', 'featured', ...uniqueTags].map((filter) => (
-            <AnimatedBadge
-              key={filter}
-              active={activeFilter === filter}
-              onClick={() => setActiveFilter(filter as Filter)}
-              variant="outline"
-            >
-              {filter.charAt(0).toUpperCase() + filter.slice(1)}
-            </AnimatedBadge>
-          ))}
-        </div>
+        {/* Horizontal scroll container */}
+        <div
+          ref={scrollContainerRef}
+          className="flex items-center h-screen overflow-x-auto overflow-y-hidden scrollbar-hide"
+          style={{
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {/* Spacer for header */}
+          <div className="flex-shrink-0 w-screen" />
 
-        {/* Projects grid */}
-        <div className="space-y-32">
-          {filteredProjects.map((project, index) => (
+          {/* Project cards */}
+          {projects.map((project, index) => (
             <div
               key={project.id}
-              className={`project-card grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center ${
-                index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-              }`}
+              className="project-card-horizontal flex-shrink-0 px-4 md:px-8"
+              style={{
+                width: 'clamp(90vw, 800px, 95vw)',
+                scrollSnapAlign: 'center',
+              }}
             >
-              {/* Image */}
-              <div
-                className={`relative group cursor-pointer ${
-                  index % 2 === 1 ? 'lg:order-2' : ''
-                }`}
-                onClick={() => setSelectedProject(project.id)}
+              <motion.div
+                onClick={() => setSelectedProject(index)}
+                className="group relative h-[70vh] md:h-[75vh] rounded-2xl overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-900"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
               >
-                <div className="project-image-wrapper relative overflow-hidden rounded-2xl aspect-[4/3]">
+                {/* Project image */}
+                <div className="absolute inset-0">
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="project-overlay absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                 </div>
 
-                {/* Number badge */}
-                <div className="project-number absolute -top-6 -right-6 w-20 h-20 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center text-2xl font-bold">
+                {/* Project number */}
+                <div className="absolute top-8 right-8 text-8xl md:text-9xl font-black text-white/10">
                   {String(index + 1).padStart(2, '0')}
                 </div>
 
-                {project.featured && (
-                  <div className="absolute top-6 left-6 bg-white dark:bg-black text-black dark:text-white px-4 py-2 text-xs font-medium">
-                    Featured
-                  </div>
-                )}
-              </div>
+                {/* Project content */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {project.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-3 py-1 text-xs font-medium bg-white/20 backdrop-blur-sm text-white rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
 
-              {/* Content */}
-              <div className={`project-content ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                <motion.h3
-                  className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-6 leading-tight"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 }}
-                >
-                  {project.title}
-                </motion.h3>
+                    {/* Title */}
+                    <h3 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                      {project.title}
+                    </h3>
 
-                <motion.div
-                  className="mb-8 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black rounded-xl border border-gray-200 dark:border-gray-800"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {project.description}
-                  </p>
-                </motion.div>
+                    {/* Description */}
+                    <p className="text-gray-300 text-lg mb-6 max-w-2xl">
+                      {project.description}
+                    </p>
 
-                {/* Tags */}
-                <motion.div
-                  className="flex flex-wrap gap-2 mb-8"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
-                >
-                  {project.tags.slice(0, 5).map((tag, tagIndex) => (
-                    <motion.span
-                      key={tag}
-                      className="px-4 py-2 text-sm rounded-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 font-medium"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5 + tagIndex * 0.05 }}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                    >
-                      {tag}
-                    </motion.span>
-                  ))}
-                </motion.div>
-
-                {/* Links */}
-                <motion.div
-                  className="flex flex-wrap gap-4"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 }}
-                >
-                  {project.github && (
-                    <GlassButton
-                      variant="primary"
-                      size="md"
-                      icon={<Github size={20} />}
-                      onClick={() => window.open(project.github, '_blank')}
-                    >
-                      View Code
-                    </GlassButton>
-                  )}
-                  {project.demo && (
-                    <GlassButton
-                      variant="secondary"
-                      size="md"
-                      icon={<ExternalLink size={20} />}
-                      onClick={() => window.open(project.demo, '_blank')}
-                    >
-                      Live Demo
-                    </GlassButton>
-                  )}
-                </motion.div>
-              </div>
+                    {/* Click to view */}
+                    <div className="flex items-center gap-2 text-white text-sm font-medium uppercase tracking-wide">
+                      <span>Click to view</span>
+                      <motion.div
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        →
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
             </div>
           ))}
-        </div>
-      </div>
 
-      {/* Project modal */}
-      <AnimatePresence mode="wait">
+          {/* Circle transition element */}
+          <div className="flex-shrink-0 w-screen flex items-center justify-center">
+            <div
+              ref={circleRef}
+              className="w-32 h-32 rounded-full border-4 border-black dark:border-white flex items-center justify-center text-4xl"
+            >
+              ⚡
+            </div>
+          </div>
+
+          {/* End spacer */}
+          <div className="flex-shrink-0 w-screen" />
+        </div>
+
+        {/* Scroll hint */}
+        <div className="absolute bottom-12 right-6 md:right-12 lg:right-16 z-20">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="flex items-center gap-3 text-gray-600 dark:text-gray-400"
+          >
+            <span className="text-sm uppercase tracking-widest">Scroll</span>
+            <motion.div
+              animate={{ x: [0, 10, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="text-2xl"
+            >
+              →
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Project Modal */}
+      <AnimatePresence>
         {selectedProject !== null && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedProject(null)}
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-8"
           >
             <motion.div
-              className="bg-white dark:bg-black w-full max-w-5xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-900 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
             >
-              {(() => {
-                const project = projects.find(p => p.id === selectedProject);
-                if (!project) return null;
+              {/* Modal header */}
+              <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6 flex items-center justify-between z-10">
+                <h3 className="text-2xl font-bold text-black dark:text-white">
+                  {projects[selectedProject].title}
+                </h3>
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
 
-                return (
-                  <>
-                    <div className="relative h-96">
-                      <img
-                        src={project.image}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => setSelectedProject(null)}
-                        className="absolute top-6 right-6 w-12 h-12 bg-white dark:bg-black text-black dark:text-white flex items-center justify-center hover:scale-110 transition-transform text-2xl"
-                      >
-                        ×
-                      </button>
-                    </div>
+              {/* Modal content */}
+              <div className="p-6 md:p-8">
+                {/* Large image */}
+                <div className="rounded-xl overflow-hidden mb-8">
+                  <img
+                    src={projects[selectedProject].image}
+                    alt={projects[selectedProject].title}
+                    className="w-full h-auto"
+                  />
+                </div>
 
-                    <div className="p-8 md:p-12">
-                      <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-4">
-                        {project.title}
-                      </h2>
+                {/* Description */}
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                  {projects[selectedProject].longDescription || projects[selectedProject].description}
+                </p>
 
-                      {project.featured && (
-                        <div className="inline-block bg-black dark:bg-white text-white dark:text-black px-4 py-1 text-sm font-medium mb-6">
-                          Featured Project
-                        </div>
-                      )}
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {projects[selectedProject].tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-full text-sm font-medium"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
-                      <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
-                        {project.description}
-                      </p>
-
-                      <div className="mb-8">
-                        <h3 className="text-sm uppercase tracking-widest text-gray-400 dark:text-gray-600 mb-4">
-                          Technologies Used
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {project.tags.map(tag => (
-                            <span
-                              key={tag}
-                              className="px-4 py-2 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-4">
-                        {project.github && (
-                          <GlassButton
-                            variant="primary"
-                            size="lg"
-                            icon={<Github size={20} />}
-                            onClick={() => window.open(project.github, '_blank')}
-                          >
-                            View Code
-                          </GlassButton>
-                        )}
-                        {project.demo && (
-                          <GlassButton
-                            variant="ghost"
-                            size="lg"
-                            icon={<ExternalLink size={20} />}
-                            onClick={() => window.open(project.demo, '_blank')}
-                          >
-                            Live Demo
-                          </GlassButton>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
+                {/* Links */}
+                <div className="flex gap-4">
+                  {projects[selectedProject].link && (
+                    <a
+                      href={projects[selectedProject].link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-lg font-medium hover:scale-105 transition-transform"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                      Visit Project
+                    </a>
+                  )}
+                  {projects[selectedProject].github && (
+                    <a
+                      href={projects[selectedProject].github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-6 py-3 border-2 border-black dark:border-white text-black dark:text-white rounded-lg font-medium hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
+                    >
+                      <Github className="w-5 h-5" />
+                      View Code
+                    </a>
+                  )}
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </section>
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+    </>
   );
 };
