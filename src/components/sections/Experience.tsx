@@ -143,6 +143,8 @@ export const Experience: React.FC = () => {
           const dates = parseDuration(experience.duration);
           const colors = glowColors[index % glowColors.length];
           const isExpanded = expandedId === experience.id;
+          const hasMoreThan5Skills = experience.skills.length > 5;
+          const visibleSkills = isExpanded ? experience.skills : experience.skills.slice(0, 5);
 
           return (
             <div
@@ -151,19 +153,19 @@ export const Experience: React.FC = () => {
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                 {/* Left Column - Dates */}
-                <div className="lg:col-span-4 space-y-8">
+                <div className="lg:col-span-4 space-y-6">
                   {/* Start Date with Glow */}
                   <motion.div
                     className="relative group cursor-default"
                     onMouseEnter={() => setHoveredDate({ id: experience.id, type: 'start' })}
                     onMouseLeave={() => setHoveredDate(null)}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
                     <div className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-2 font-medium">
                       Started
                     </div>
-                    <div className={`text-6xl md:text-7xl lg:text-8xl font-black text-black dark:text-white leading-none transition-all duration-500 ${
+                    <div className={`text-4xl md:text-5xl lg:text-6xl font-black text-black dark:text-white leading-none transition-all duration-500 ${
                       hoveredDate?.id === experience.id && hoveredDate?.type === 'start'
                         ? `bg-gradient-to-r ${colors.from} ${colors.to} bg-clip-text text-transparent`
                         : ''
@@ -182,9 +184,9 @@ export const Experience: React.FC = () => {
                   </motion.div>
 
                   {/* Separator */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <div className="h-px flex-1 bg-gray-300 dark:bg-gray-700" />
-                    <span className="text-gray-400 dark:text-gray-600 text-sm">to</span>
+                    <span className="text-gray-400 dark:text-gray-600 text-xs">to</span>
                     <div className="h-px flex-1 bg-gray-300 dark:bg-gray-700" />
                   </div>
 
@@ -193,13 +195,13 @@ export const Experience: React.FC = () => {
                     className="relative group cursor-default"
                     onMouseEnter={() => setHoveredDate({ id: experience.id, type: 'end' })}
                     onMouseLeave={() => setHoveredDate(null)}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
                     <div className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-2 font-medium">
                       {dates.end === 'Present' ? 'Current' : 'Ended'}
                     </div>
-                    <div className={`text-6xl md:text-7xl lg:text-8xl font-black text-black dark:text-white leading-none transition-all duration-500 ${
+                    <div className={`text-4xl md:text-5xl lg:text-6xl font-black text-black dark:text-white leading-none transition-all duration-500 ${
                       hoveredDate?.id === experience.id && hoveredDate?.type === 'end'
                         ? `bg-gradient-to-r ${colors.from} ${colors.to} bg-clip-text text-transparent`
                         : ''
@@ -259,75 +261,58 @@ export const Experience: React.FC = () => {
                     {experience.description}
                   </p>
 
-                  {/* View More Toggle */}
-                  <motion.button
-                    onClick={() => setExpandedId(isExpanded ? null : experience.id)}
-                    className="group flex items-center gap-2 text-black dark:text-white font-medium hover:gap-3 transition-all"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>{isExpanded ? 'View Less' : 'View More'}</span>
-                    <ChevronDown
-                      className={`w-5 h-5 transition-transform duration-300 ${
-                        isExpanded ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </motion.button>
+                  {/* Achievements - Always Visible */}
+                  <div>
+                    <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-4 font-medium">
+                      Key Achievements
+                    </h4>
+                    <div className="space-y-3">
+                      {experience.achievements.map((achievement, i) => (
+                        <div
+                          key={i}
+                          className="achievement-item flex items-start gap-3 text-sm md:text-base lg:text-lg text-gray-700 dark:text-gray-300"
+                        >
+                          <span className="text-black dark:text-white font-bold flex-shrink-0 text-lg">→</span>
+                          <span>{achievement}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                  {/* Expandable Content */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-6 md:space-y-8 overflow-hidden"
+                  {/* Technologies */}
+                  <div>
+                    <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-4 font-medium">
+                      Technologies
+                    </h4>
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                      {visibleSkills.map((skill, i) => (
+                        <motion.span
+                          key={skill}
+                          whileHover={{ scale: 1.1, y: -2 }}
+                          className="skill-tag px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm lg:text-base bg-black dark:bg-white text-white dark:text-black font-medium rounded-lg border-2 border-black dark:border-white cursor-default"
+                        >
+                          {skill}
+                        </motion.span>
+                      ))}
+                    </div>
+
+                    {/* View More Toggle - Only for Tech Stack if > 5 */}
+                    {hasMoreThan5Skills && (
+                      <motion.button
+                        onClick={() => setExpandedId(isExpanded ? null : experience.id)}
+                        className="group flex items-center gap-2 text-black dark:text-white font-medium hover:gap-3 transition-all mt-4"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        {/* Achievements */}
-                        <div>
-                          <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-4 font-medium">
-                            Key Achievements
-                          </h4>
-                          <div className="space-y-3">
-                            {experience.achievements.map((achievement, i) => (
-                              <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                className="achievement-item flex items-start gap-3 text-sm md:text-base lg:text-lg text-gray-700 dark:text-gray-300"
-                              >
-                                <span className="text-black dark:text-white font-bold flex-shrink-0 text-lg">→</span>
-                                <span>{achievement}</span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Technologies */}
-                        <div>
-                          <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-4 font-medium">
-                            Technologies
-                          </h4>
-                          <div className="flex flex-wrap gap-2 md:gap-3">
-                            {experience.skills.map((skill, i) => (
-                              <motion.span
-                                key={skill}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: i * 0.05 }}
-                                whileHover={{ scale: 1.1, y: -2 }}
-                                className="skill-tag px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm lg:text-base bg-black dark:bg-white text-white dark:text-black font-medium rounded-lg border-2 border-black dark:border-white cursor-default"
-                              >
-                                {skill}
-                              </motion.span>
-                            ))}
-                          </div>
-                        </div>
-                      </motion.div>
+                        <span>{isExpanded ? 'View Less' : `View ${experience.skills.length - 5} More`}</span>
+                        <ChevronDown
+                          className={`w-5 h-5 transition-transform duration-300 ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </motion.button>
                     )}
-                  </AnimatePresence>
+                  </div>
                 </div>
               </div>
 

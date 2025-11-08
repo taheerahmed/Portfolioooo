@@ -18,6 +18,10 @@
     @apply bg-light-background text-light-accent dark:bg-dark-background dark:text-white;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
   }
 
   /* Improve anchor tag underlines */
