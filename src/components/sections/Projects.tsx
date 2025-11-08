@@ -57,17 +57,6 @@ export const Projects: React.FC = () => {
 
   return (
     <>
-      {/* View All Projects Link - Outside pinned section */}
-      <div className="fixed top-6 md:top-8 right-6 md:right-12 z-[100] pointer-events-none">
-        <Link
-          to="/projects"
-          className="pointer-events-auto group flex items-center gap-2 text-sm md:text-base text-black dark:text-white hover:opacity-70 transition-opacity bg-white/80 dark:bg-black/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800"
-        >
-          <span className="font-medium">View All Projects</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-        </Link>
-      </div>
-
       <section
         ref={sectionRef}
         id="projects"
@@ -75,13 +64,24 @@ export const Projects: React.FC = () => {
         style={{ height: '100vh' }}
       >
         {/* Header - Fixed positioning, better spacing */}
-        <div className="absolute top-6 md:top-8 left-6 md:left-12 z-20">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-black dark:text-white">
+        <div className="absolute top-6 md:top-8 left-6 md:left-12 z-20 pointer-events-none">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-black dark:text-white pointer-events-auto">
             Selected Work
           </h2>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 pointer-events-auto">
             {projects.length} Projects
           </p>
+        </div>
+
+        {/* View All Projects Link - High z-index to stay above scroll content */}
+        <div className="absolute top-6 md:top-8 right-6 md:right-12 z-50 pointer-events-none">
+          <Link
+            to="/projects"
+            className="pointer-events-auto group flex items-center gap-2 text-sm md:text-base text-black dark:text-white hover:opacity-70 transition-opacity bg-white/80 dark:bg-black/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800"
+          >
+            <span className="font-medium">View All Projects</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
 
         {/* Horizontal scroll container - adjusted positioning */}
