@@ -30,23 +30,11 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
             <div className="relative w-full h-full">
               {/* Top Pane */}
               <motion.div
-                className="absolute top-0 left-0 w-full h-1/2 bg-black dark:bg-white origin-top flex items-end justify-center pb-4"
+                className="absolute top-0 left-0 w-full h-1/2 bg-black dark:bg-white origin-top"
                 initial={{ scaleY: 1 }}
                 animate={{ scaleY: 1, transition: { duration: 0.01 } }}
                 exit={{ scaleY: 0, transition: { duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: 0.1 } }}
-              >
-                <motion.div
-                  initial={{ opacity: 1, y: 0 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="overflow-hidden"
-                >
-                  <span className="text-6xl md:text-8xl lg:text-9xl font-black text-white dark:text-black tracking-tighter">
-                    TAHEER
-                  </span>
-                </motion.div>
-              </motion.div>
+              />
 
               {/* Bottom Pane */}
               <motion.div
@@ -55,6 +43,23 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
                 animate={{ scaleY: 1, transition: { duration: 0.01 } }}
                 exit={{ scaleY: 0, transition: { duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: 0.1 } }}
               />
+
+              {/* TAHEER Text - Positioned like Hero */}
+              <div className="absolute inset-0 flex items-center">
+                <div className="container mx-auto px-6 md:px-12 lg:px-20 w-full">
+                  <motion.div
+                    initial={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4 }}
+                    className="overflow-hidden max-w-6xl"
+                  >
+                    <span className="text-[18vw] sm:text-[14vw] md:text-[12vw] lg:text-[10vw] xl:text-[140px] font-black text-white dark:text-black tracking-tighter leading-[0.9]">
+                      TAHEER
+                    </span>
+                  </motion.div>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

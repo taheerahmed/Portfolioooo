@@ -57,6 +57,17 @@ export const Projects: React.FC = () => {
 
   return (
     <>
+      {/* View All Projects Link - Outside pinned section */}
+      <div className="fixed top-6 md:top-8 right-6 md:right-12 z-[100] pointer-events-none">
+        <Link
+          to="/projects"
+          className="pointer-events-auto group flex items-center gap-2 text-sm md:text-base text-black dark:text-white hover:opacity-70 transition-opacity bg-white/80 dark:bg-black/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800"
+        >
+          <span className="font-medium">View All Projects</span>
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+
       <section
         ref={sectionRef}
         id="projects"
@@ -72,15 +83,6 @@ export const Projects: React.FC = () => {
             {projects.length} Projects
           </p>
         </div>
-
-        {/* View All Projects Link */}
-        <Link
-          to="/projects"
-          className="absolute top-6 md:top-8 right-6 md:right-12 z-20 group flex items-center gap-2 text-sm md:text-base text-black dark:text-white hover:opacity-70 transition-opacity"
-        >
-          <span className="font-medium">View All Projects</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-        </Link>
 
         {/* Horizontal scroll container - adjusted positioning */}
         <div

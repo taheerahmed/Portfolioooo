@@ -15,13 +15,21 @@
   }
   
   body {
-    @apply bg-light-background text-light-accent dark:bg-dark-background dark:text-white;
+    @apply bg-light-background text-light-accent dark:bg-dark-background dark:text-white font-sans;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+  }
+
+  /* Apply display font to headings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
 
   /* Improve anchor tag underlines */
@@ -44,7 +52,7 @@
   
   /* Code and terminal like elements */
   pre, code, .code-block {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+    @apply font-mono;
     line-height: 1.5;
   }
 
