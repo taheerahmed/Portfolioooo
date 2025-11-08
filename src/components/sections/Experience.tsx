@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { experiences } from '../../data/experience';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -9,11 +9,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 export const Experience: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<HTMLDivElement[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const cards = cardsRef.current;
-    if (!cards.length) return;
+    if (!containerRef.current || !sectionRef.current) return;
+
+    const container = containerRef.current;
+    const section = sectionRef.current;
+    const panels = gsap.utils.toArray('.experience-panel');
 
     const ctx = gsap.context(() => {
       // Heading animation
@@ -32,69 +35,45 @@ export const Experience: React.FC = () => {
         }
       );
 
-      // Card stack animation
-      cards.forEach((card, index) => {
-        // Skip the last card as it doesn't need to scale out
-        if (index < cards.length - 1) {
-          gsap.to(card, {
-            scrollTrigger: {
-              trigger: card,
-              start: 'top top',
-              end: '+=100%',
-              pin: true,
-              pinSpacing: false,
-              scrub: 1,
-            },
-            scale: 0.9,
-            opacity: 0.5,
-            filter: 'blur(8px)',
-            transformOrigin: 'center center',
-            ease: 'none',
-          });
-        } else {
-          // Pin the last card
-          ScrollTrigger.create({
-            trigger: card,
-            start: 'top top',
-            end: '+=100%',
-            pin: true,
-            pinSpacing: true,
-          });
-        }
+      // Horizontal scroll animation
+      const totalWidth = (panels.length - 1) * window.innerWidth;
 
-        // Parallax effect on card content
-        const content = card.querySelector('.card-content');
-        if (content) {
-          gsap.to(content, {
-            y: -50,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1,
-            },
-          });
-        }
+      gsap.to(container, {
+        x: () => -totalWidth,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          pin: true,
+          scrub: 1,
+          end: () => `+=${totalWidth}`,
+          invalidateOnRefresh: true,
+        },
+      });
 
-        // Fade in animation when card comes into view
+      // Animate each panel's content on entry
+      panels.forEach((panel: any, index) => {
+        const content = panel.querySelectorAll('.panel-content');
+        const skills = panel.querySelectorAll('.skill-tag');
+        const achievements = panel.querySelectorAll('.achievement-item');
+
         gsap.fromTo(
-          card,
-          { opacity: 0, y: 100 },
+          content,
+          { opacity: 0, x: 100 },
           {
             opacity: 1,
-            y: 0,
+            x: 0,
             duration: 1,
             ease: 'power3.out',
             scrollTrigger: {
-              trigger: card,
-              start: 'top 90%',
-              toggleActions: 'play none none none',
+              trigger: panel,
+              containerAnimation: gsap.getProperty(container, 'x') !== undefined ? ScrollTrigger.getById('main') : undefined,
+              start: 'left center',
+              end: 'right center',
+              toggleActions: 'play none none reverse',
             },
           }
         );
 
-        // Animate skills tags
-        const skills = card.querySelectorAll('.skill-tag');
         gsap.fromTo(
           skills,
           { opacity: 0, scale: 0.8, y: 20 },
@@ -106,14 +85,14 @@ export const Experience: React.FC = () => {
             stagger: 0.05,
             ease: 'back.out(1.7)',
             scrollTrigger: {
-              trigger: card,
-              start: 'top 70%',
+              trigger: panel,
+              containerAnimation: gsap.getProperty(container, 'x') !== undefined ? ScrollTrigger.getById('main') : undefined,
+              start: 'left 60%',
+              toggleActions: 'play none none reverse',
             },
           }
         );
 
-        // Animate achievements
-        const achievements = card.querySelectorAll('.achievement-item');
         gsap.fromTo(
           achievements,
           { opacity: 0, x: -30 },
@@ -124,11 +103,19 @@ export const Experience: React.FC = () => {
             stagger: 0.1,
             ease: 'power3.out',
             scrollTrigger: {
-              trigger: card,
-              start: 'top 60%',
+              trigger: panel,
+              containerAnimation: gsap.getProperty(container, 'x') !== undefined ? ScrollTrigger.getById('main') : undefined,
+              start: 'left 50%',
+              toggleActions: 'play none none reverse',
             },
           }
         );
+      });
+
+      ScrollTrigger.getAll().forEach(st => {
+        if (st.trigger === section) {
+          st.id = 'main';
+        }
       });
     }, sectionRef);
 
@@ -139,10 +126,10 @@ export const Experience: React.FC = () => {
     <section
       ref={sectionRef}
       id="experience"
-      className="relative bg-white dark:bg-black py-20 md:py-32"
+      className="relative bg-white dark:bg-black overflow-hidden"
     >
       {/* Header */}
-      <div className="container mx-auto px-6 md:px-12 mb-20 md:mb-32">
+      <div className="container mx-auto px-6 md:px-12 py-20 md:py-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -154,111 +141,153 @@ export const Experience: React.FC = () => {
             Experience
           </h2>
           <p className="experience-heading text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl">
-            Journey through my professional career, building impactful products and leading talented teams.
+            Scroll horizontally through my professional journey
           </p>
         </motion.div>
       </div>
 
-      {/* Stacked Cards */}
-      <div className="relative">
-        {experiences.map((experience, index) => (
-          <div
-            key={experience.id}
-            ref={(el) => {
-              if (el) cardsRef.current[index] = el;
-            }}
-            className="sticky top-0 min-h-screen flex items-center py-20"
-            style={{
-              zIndex: experiences.length - index,
-            }}
-          >
-            <div className="container mx-auto px-6 md:px-12">
-              <div className="card-content max-w-6xl mx-auto">
-                <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-3xl p-8 md:p-12 lg:p-16 shadow-2xl">
-                  {/* Header Section */}
-                  <div className="mb-8 md:mb-12">
-                    {/* Company Logo & Number */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 border-black dark:border-white flex-shrink-0">
-                        <img
-                          src={experience.logo}
-                          alt={`${experience.company} logo`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="text-6xl md:text-8xl font-black text-black/5 dark:text-white/5 leading-none">
-                        {String(index + 1).padStart(2, '0')}
-                      </div>
+      {/* Horizontal Scroll Container */}
+      <div className="h-screen flex items-center">
+        <div
+          ref={containerRef}
+          className="flex"
+        >
+          {experiences.map((experience, index) => (
+            <div
+              key={experience.id}
+              className="experience-panel w-screen h-screen flex items-center justify-center px-6 md:px-12 flex-shrink-0"
+            >
+              <div className="panel-content max-w-6xl w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                  {/* Left Column - Number & Meta */}
+                  <div className="lg:col-span-4 space-y-8">
+                    {/* Large Number */}
+                    <div className="text-[140px] md:text-[200px] font-black text-black/5 dark:text-white/5 leading-none">
+                      {String(index + 1).padStart(2, '0')}
                     </div>
 
-                    {/* Role & Company */}
-                    <h3 className="text-3xl md:text-5xl lg:text-6xl font-black text-black dark:text-white mb-4 leading-tight tracking-tight">
-                      {experience.role}
-                    </h3>
-                    <div className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-4 font-medium">
-                      {experience.company}
+                    {/* Company Logo */}
+                    <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-black dark:border-white">
+                      <img
+                        src={experience.logo}
+                        alt={`${experience.company} logo`}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
 
                     {/* Meta Info */}
-                    <div className="flex flex-wrap gap-4 text-sm md:text-base text-gray-500 dark:text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>{experience.duration}</span>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <Calendar className="w-5 h-5" />
+                        <span className="text-lg">{experience.duration}</span>
                       </div>
                       {experience.location && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{experience.location}</span>
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                          <MapPin className="w-5 h-5" />
+                          <span className="text-lg">{experience.location}</span>
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Description */}
-                  <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-8 md:mb-12 leading-relaxed max-w-4xl">
-                    {experience.description}
-                  </p>
-
-                  {/* Achievements */}
-                  <div className="mb-8 md:mb-12">
-                    <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-6 font-medium">
-                      Key Achievements
-                    </h4>
-                    <div className="space-y-4">
-                      {experience.achievements.map((achievement, i) => (
-                        <div
-                          key={i}
-                          className="achievement-item flex items-start gap-3 text-base md:text-lg text-gray-700 dark:text-gray-300"
-                        >
-                          <span className="text-black dark:text-white font-bold flex-shrink-0">→</span>
-                          <span>{achievement}</span>
-                        </div>
-                      ))}
+                    {/* Navigation Hint */}
+                    <div className="hidden lg:flex items-center gap-3 text-gray-400 dark:text-gray-600">
+                      <span className="text-sm uppercase tracking-widest">Scroll</span>
+                      <ArrowRight className="w-5 h-5" />
                     </div>
                   </div>
 
-                  {/* Technologies */}
-                  <div>
-                    <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-6 font-medium">
-                      Technologies Used
-                    </h4>
-                    <div className="flex flex-wrap gap-3">
-                      {experience.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="skill-tag px-4 py-2 text-sm md:text-base bg-black dark:bg-white text-white dark:text-black font-medium rounded-lg"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+                  {/* Right Column - Content */}
+                  <div className="lg:col-span-8 space-y-8 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
+                    {/* Role & Company */}
+                    <div>
+                      <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-black dark:text-white mb-4 leading-tight tracking-tight">
+                        {experience.role}
+                      </h3>
+                      <div className="text-2xl md:text-3xl text-gray-600 dark:text-gray-400 font-medium">
+                        {experience.company}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {experience.description}
+                    </p>
+
+                    {/* Achievements */}
+                    <div>
+                      <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-4 font-medium">
+                        Key Achievements
+                      </h4>
+                      <div className="space-y-3">
+                        {experience.achievements.map((achievement, i) => (
+                          <div
+                            key={i}
+                            className="achievement-item flex items-start gap-3 text-base md:text-lg text-gray-700 dark:text-gray-300"
+                          >
+                            <span className="text-black dark:text-white font-bold flex-shrink-0 text-xl">→</span>
+                            <span>{achievement}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Technologies */}
+                    <div>
+                      <h4 className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-500 mb-4 font-medium">
+                        Technologies
+                      </h4>
+                      <div className="flex flex-wrap gap-3">
+                        {experience.skills.map((skill) => (
+                          <span
+                            key={skill}
+                            className="skill-tag px-4 py-2 text-sm md:text-base bg-black dark:bg-white text-white dark:text-black font-medium rounded-xl border-2 border-black dark:border-white"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Scroll Progress Indicator */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+        {experiences.map((_, index) => (
+          <div
+            key={index}
+            className="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden"
+          >
+            <div className="progress-bar h-full bg-black dark:bg-white" />
           </div>
         ))}
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 3px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 0, 0, 0.3);
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      `}</style>
     </section>
   );
 };
